@@ -46,7 +46,7 @@ const Users = () => {
   };
   const handleDeleteUser = async (id) => {
     try {
-      await fetch(`api/users/${id}`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/api/users/${id}`, {
         method: "DELETE",
         credentials: "include",
       })

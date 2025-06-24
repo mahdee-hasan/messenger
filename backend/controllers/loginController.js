@@ -46,19 +46,21 @@ const login = async (req, res, next) => {
         });
 
         res.cookie(process.env.COOKIE_NAME, token, {
-          maxAge: process.env.JWT_EXPIRY,
+          maxAge: parseInt(process.env.JWT_EXPIRY), // in milliseconds
           signed: true,
-          sameSite:"none"
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production", // only true in production (https)
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // compatible for both
         });
 
         res.status(200).json(userObject);
       } else {
         errorInput.password = "wrong password";
-        res.status(404).json({message:"error here"});
+        res.status(404).json({ message: "error here" });
       }
     } else {
       errorInput.username = "invalid username or phone";
-      res.status(404).json({message:"error here"});
+      res.status(404).json({ message: "error here" });
     }
   } catch (error) {
     res.status(500).json({
