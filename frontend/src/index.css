@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.nav-bar-component {
+  @apply rounded md:min-w-38  text-sm xl:text-xl flex items-center  justify-center
+  md:justify-around space-x-1 hover:bg-gray-100 hover:text-black;
+}
+.nav-photo {
+  @apply text-3xl md:text-xl;
+}
