@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import picture from "../assets/pic.png";
+import useChatStore from "../stores/chatStore";
 const SessionExpired = ({ data }) => {
   const setMsg = useChatStore((s) => s.setPopUpMessage);
 
