@@ -273,7 +273,7 @@ const Inbox = () => {
     <>
       <div
         className={`h-18 flex items-center border-b border-gray-300/50 justify-around ${
-          isOpen ? "hidden" : "flex"
+          isOpen && isSearchModalOpen ? "hidden" : "flex"
         }`}
       >
         <p className="text-2xl text-blue-700 uppercase font-extrabold">
@@ -299,67 +299,69 @@ const Inbox = () => {
         </button>
       </div>
 
-      <div
-        className={`${
-          isOpen ? "hidden" : "flex"
-        } h-20 overflow-x-auto items-center space-x-3 w-full px-4`}
-      >
-        <Swiper
-          spaceBetween={5}
-          slidesPerView={"auto"}
-          freeMode
-          className="cursor-grab"
+      {!isSearchModalOpen && (
+        <div
+          className={`${
+            isOpen && isSearchModalOpen ? "hidden" : "flex"
+          } h-20 overflow-x-auto items-center space-x-3 w-full px-4`}
         >
-          {user && (
-            <SwiperSlide style={{ width: "56px", height: "56px" }}>
-              {user.avatar ? (
-                <img
-                  src={user.avatar}
-                  className="w-12 mt-1 h-12 ring rounded-full object-cover"
-                  alt="user"
-                />
-              ) : (
-                <IoPersonCircle className="text-[48px] ml-1 mt-1 rounded-full ring" />
-              )}
-              <p className="text-[8px] text-center">you</p>
-            </SwiperSlide>
-          )}
+          <Swiper
+            spaceBetween={5}
+            slidesPerView={"auto"}
+            freeMode
+            className="cursor-grab"
+          >
+            {user && (
+              <SwiperSlide style={{ width: "56px", height: "56px" }}>
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    className="w-12 mt-1 h-12 ring rounded-full object-cover"
+                    alt="user"
+                  />
+                ) : (
+                  <IoPersonCircle className="text-[48px] ml-1 mt-1 rounded-full ring" />
+                )}
+                <p className="text-[8px] text-center">you</p>
+              </SwiperSlide>
+            )}
 
-          {users?.map((u) => (
-            <SwiperSlide
-              key={u._id}
-              style={{ width: "56px", height: "70px" }}
-              className="relative cursor-pointer"
-              onClick={() => openChatFromHead(u._id, u.name, u.avatar)}
-            >
-              {u.avatar ? (
-                <img
-                  src={u.avatar}
-                  className="w-12 ml-1 mt-1 h-12 ring rounded-full object-cover"
-                  alt="user"
-                />
-              ) : (
-                <IoPersonCircle className="text-[48px] ml-1 mt-1 rounded-full ring" />
-              )}
-              <p className="text-[8px] truncate text-center">{u.name}</p>
-              {u.active ? (
-                <div className="absolute right-1 bottom-4">
-                  <span className="relative flex size-3">
-                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
-                    <span className="relative inline-flex size-3 rounded-full bg-green-600"></span>
-                  </span>
-                </div>
-              ) : (
-                <div className="absolute text-[7px] h-[12px] w-[12px] bg-white ring-[0.5px] text-black rounded-full right-1 ring-green-400 bottom-4">
-                  <p className="justify-self-center my-auto text-shadow-2xs">
-                    {timeAgo(u.updatedAt)}
-                  </p>
-                </div>
-              )}
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
+            {users?.map((u) => (
+              <SwiperSlide
+                key={u._id}
+                style={{ width: "56px", height: "70px" }}
+                className="relative cursor-pointer"
+                onClick={() => openChatFromHead(u._id, u.name, u.avatar)}
+              >
+                {u.avatar ? (
+                  <img
+                    src={u.avatar}
+                    className="w-12 ml-1 mt-1 h-12 ring rounded-full object-cover"
+                    alt="user"
+                  />
+                ) : (
+                  <IoPersonCircle className="text-[48px] ml-1 mt-1 rounded-full ring" />
+                )}
+                <p className="text-[8px] truncate text-center">{u.name}</p>
+                {u.active ? (
+                  <div className="absolute right-1 bottom-4">
+                    <span className="relative flex size-3">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
+                      <span className="relative inline-flex size-3 rounded-full bg-green-600"></span>
+                    </span>
+                  </div>
+                ) : (
+                  <div className="absolute text-[7px] h-[12px] w-[12px] bg-white ring-[0.5px] text-black rounded-full right-1 ring-green-400 bottom-4">
+                    <p className="justify-self-center my-auto text-shadow-2xs">
+                      {timeAgo(u.updatedAt)}
+                    </p>
+                  </div>
+                )}
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      )}
 
       <PageTitle title="Inbox - Chat Application" />
 

@@ -9,10 +9,9 @@ import useChatStore from "../stores/chatStore";
 const SearchModal = ({ isOpen, setIsOpen, onClose, openFunc }) => {
   const [users, setUsers] = useState([]);
   const timeoutRef = useRef(null);
-
+  const setMsg = useChatStore((s) => s.setPopUpMessage);
   const handleSearch = (e) => {
     const value = e.target.value;
-    const setMsg = useChatStore((s) => s.setPopUpMessage);
 
     // Clear previous timeout
     clearTimeout(timeoutRef.current);
