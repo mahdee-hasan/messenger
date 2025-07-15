@@ -34,6 +34,10 @@ const peopleSchema = mongoose.Schema(
       enum: ["user", "admin"],
       default: "user",
     },
+    active: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

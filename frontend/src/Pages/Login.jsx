@@ -1,23 +1,35 @@
+// internal imports
 import React, { useState, useEffect } from "react";
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import { toast, ToastContainer } from "react-toastify";
+import { ClipLoader } from "react-spinners";
+import useChatStore from "../stores/chatStore";
+
+// external imports
+// ..
+
 const Login = ({ data }) => {
+  //use useState for state lifting
   const [formData, setFormData] = useState({
     username: "",
     password: "",
   });
+  const [isLoading, setIsLoading] = useState(false);
   const [usernameError, setUsernameError] = useState(null);
   const [passwordError, setPasswordError] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
 
+  const setMsg = useChatStore((s) => s.setPopUpMessage);
+
+  //replace the location to user-info if user is logged in
   useEffect(() => {
     if (data?.isLoggedIn) {
       location.replace(
-        `/user-info/${JSON.parse(localStorage.getItem("username")).value}`
+        `/user-info/${JSON.parse(localStorage.getItem("userId")).value}`
       );
     }
   }, []);
 
+  //handle the input
   const handleInput = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (e.target.name === "username") {
@@ -27,7 +39,9 @@ const Login = ({ data }) => {
     }
   };
 
+  //send a post request when Submit the form
   const handleSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault();
     try {
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
@@ -38,32 +52,36 @@ const Login = ({ data }) => {
         },
         credentials: "include",
       });
-      console.log({ res });
-
+      //take action for the given response from backend
       if (!res.ok) {
         const errorData = await res.json();
-        throw new Error("error login , i am from frontend");
+        throw new Error("error occurred");
         return;
       }
-
+      //format the data
       const data = await res.json();
+      //set userId to the local storage
       localStorage.setItem(
-        "username",
+        "userId",
         JSON.stringify({
-          value: data.username,
+          value: data.userId,
           expiry: Date.now() + 86400000,
         })
       );
-      location.replace(`/user-info/${data.username}`);
+      //replace the location to the user-info
+      location.replace(`/user-info/${data.userId}`);
     } catch (err) {
-      toast.error(err.message);
-      console.error(err.message);
+      //take action after catching the error
+      setMsg(err.message);
+    } finally {
+      setIsLoading(false);
+      setMsg("login successful");
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <ToastContainer />
+      {/* make form to fill an object of username and users password */}
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm"
@@ -105,7 +123,8 @@ const Login = ({ data }) => {
             id="password"
             value={formData.password}
             onChange={handleInput}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 
+            rounded-lg pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
           {passwordError && (
@@ -126,11 +145,23 @@ const Login = ({ data }) => {
           type="submit"
           className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition duration-200"
         >
-          Submit
+          {/* if the submit on going make the button to loader  */}
+          {isLoading ? (
+            <ClipLoader
+              color="white"
+              loading={true}
+              size={25}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          ) : (
+            "Submit"
+          )}
         </button>
       </form>
     </div>
   );
 };
 
+// export the component
 export default Login;

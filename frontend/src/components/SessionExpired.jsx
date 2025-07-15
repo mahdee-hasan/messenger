@@ -1,17 +1,19 @@
 import React, { useEffect } from "react";
 import picture from "../assets/pic.png";
-import { toast, ToastContainer } from "react-toastify";
 const SessionExpired = ({ data }) => {
+  const setMsg = useChatStore((s) => s.setPopUpMessage);
+
   useEffect(() => {
     if (data) {
-      toast("please login to chat");
+      console.log("please login to chat");
+      setMsg("please re-login");
     } else {
-      toast.error(data);
+      console.error(data);
+      setMsg(data);
     }
   }, [data]);
   return (
     <div className="flex h-[90vh]">
-      <ToastContainer />
       <img
         src={picture}
         alt="img"

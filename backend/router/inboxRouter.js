@@ -12,6 +12,10 @@ const {
   deleteForEveryone,
   updateMessage,
   deleteForME,
+  openChat,
+  closeChat,
+  closeAllChat,
+  startTyping,
 } = require("../controllers/inboxController");
 const checkLogin = require("../middleware/common/checkLogin");
 const attachmentUploader = require("../middleware/inbox/attachmentUploader");
@@ -28,6 +32,10 @@ router.post(
   attachToCloud,
   sendMessage
 );
+router.get("/close-all-con", checkLogin, closeAllChat);
+router.get("/open-chat/:id", checkLogin, openChat);
+router.get("/close-chat/:id", checkLogin, closeChat);
+router.get("/start-typing/:id", checkLogin, startTyping);
 router.delete("/everyone/:id", checkLogin, deleteForEveryone);
 router.delete("/forMe/:id", checkLogin, deleteForME);
 router.post("/editMessage/:id", checkLogin, updateMessage);

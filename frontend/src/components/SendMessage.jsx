@@ -10,6 +10,17 @@ const SendMessage = ({ id }) => {
   const [attachmentFiles, setAttachmentFiles] = useState([]);
 
   const handleChangeInput = (e) => {
+    try {
+      const res = fetch(
+        `${import.meta.env.VITE_API_URL}/api/inbox/start-typing/${id}`,
+        {
+          credentials: "include",
+        }
+      );
+      if (!res.ok) {
+        throw new Error("error start typing");
+      }
+    } catch (error) {}
     if (e.target.name === "attachment") {
       const files = Array.from(e.target.files);
       if (files.length > 0) {
@@ -50,7 +61,7 @@ const SendMessage = ({ id }) => {
 
   return (
     <form
-      className="w-full bg-slate-400 rounded-2xl flex items-center"
+      className="w-full  rounded border bg-gray-200 py-2 flex items-center"
       encType="multipart/form-data"
       onSubmit={(e) => {
         e.preventDefault();
@@ -58,7 +69,7 @@ const SendMessage = ({ id }) => {
       }}
     >
       <label htmlFor="attachment">
-        <IoAttach className="text-3xl m-2 font-bold cursor-pointer" />
+        <IoAttach className="text-xl text-indigo-900 m-2 font-bold cursor-pointer" />
         <input
           type="file"
           name="attachment"
@@ -73,7 +84,10 @@ const SendMessage = ({ id }) => {
       <div className="flex gap-2">
         {isAttachment &&
           attachmentFiles.map((file, index) => (
-            <p key={index} className="text-xs text-white px-2">
+            <p
+              key={index}
+              className="text-xs max-w-12 truncate text-white px-2"
+            >
               {file.name}
             </p>
           ))}
@@ -82,17 +96,18 @@ const SendMessage = ({ id }) => {
       <input
         type="text"
         name="text"
-        className="flex-1 p-3 outline-none rounded-l-2xl
-                       bg-slate-300 text-black focus:bg-slate-200"
+        className="flex-1 px-3 py-1 bg-white outline-none rounded-2xl
+       text-black "
+        placeholder="message"
         value={inputMessage.text}
         onChange={handleChangeInput}
+        autoFocus
       />
-      <button
-        type="submit"
-        className="p-3 rounded-r-2xl bg-slate-500 hover:bg-slate-600"
-      >
-        <IoSend className="text-2xl text-white" />
-      </button>
+      {(inputMessage.text || inputMessage.attachment) && (
+        <button type="submit" className="p-3 rounded-r-2xl cursor-pointer">
+          <IoSend className="text-xl text-indigo-900" />
+        </button>
+      )}
     </form>
   );
 };

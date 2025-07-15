@@ -6,9 +6,11 @@ const cookieParser = require("cookie-parser");
 const cors = require("cors");
 const http = require("http");
 const { Server } = require("socket.io");
+const jwt = require("jsonwebtoken");
 
 // internal imports
 const { connectDB } = require("./config/db");
+const people = require("./models/people");
 const {
   errorHandler,
   notFoundHandler,
@@ -16,6 +18,7 @@ const {
 const loginRouter = require("./router/loginRouter");
 const inboxRouter = require("./router/inboxRouter");
 const usersRouter = require("./router/usersRouter");
+const conversation = require("./models/conversation");
 
 // config
 
@@ -65,8 +68,48 @@ app.use("/api/inbox", inboxRouter);
 app.use(notFoundHandler);
 app.use(errorHandler);
 
-io.on("connection", (socket) => {
-  socket.on("disconnect", () => {});
+io.on("connection", async (socket) => {
+  const cookieHeader = socket.handshake.headers.cookie;
+
+  if (cookieHeader?.includes("=")) {
+    try {
+      const token = decodeURIComponent(cookieHeader.split("=")[1])
+        .replace(/^s:/, "")
+        .split(".")
+        .slice(0, 3)
+        .join(".");
+
+      const userData = jwt.decode(token);
+      const userId = userData?.userId;
+      const username = userData.username;
+      if (userId) {
+        socket.userId = userId;
+        socket.username = username;
+        await people.updateOne({ _id: userId }, { $set: { active: true } });
+      }
+    } catch (err) {
+      console.error("Token decode error:", err);
+    }
+  }
+
+  socket.on("disconnect", async () => {
+    try {
+      if (socket.userId) {
+        await people.updateOne(
+          { _id: socket.userId },
+          { $set: { active: false } }
+        );
+      }
+      if (socket.username) {
+        await conversation.updateMany(
+          { isOpen: socket.username },
+          { $pull: { isOpen: socket.username } }
+        );
+      }
+    } catch (err) {
+      console.error("Disconnect error:", err);
+    }
+  });
 });
 
 // listen

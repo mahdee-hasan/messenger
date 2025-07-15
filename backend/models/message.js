@@ -5,6 +5,10 @@ const messageSchema = mongoose.Schema(
     text: {
       type: String,
     },
+    old_text: {
+      type: [String],
+      default: [],
+    },
     attachment: {
       type: Array,
     },

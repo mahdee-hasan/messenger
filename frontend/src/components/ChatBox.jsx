@@ -1,12 +1,48 @@
-import React from "react";
-import { toast, ToastContainer } from "react-toastify";
+import { useEffect, useState } from "react";
 import SendMessage from "./SendMessage";
 import Messages from "./Messages";
 import { IoPersonCircle, IoTrash } from "react-icons/io5";
 import { FaArrowCircleLeft } from "react-icons/fa";
+import { ClipLoader } from "react-spinners";
+import useChatStore from "../stores/chatStore";
+import timeAgo from "../hooks/timeAgo";
 
-const ChatBox = ({ isOpen, selectedUser, func }) => {
+const ChatBox = ({
+  isOpen,
+  selectedConversation,
+  func,
+  allUser,
+  user,
+  unseenCount,
+  isTyping,
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [senderDetails, setSenderDetails] = useState(null);
+  const [userDetailsLoading, setUserDetailsLoading] = useState(true);
+
+  const setPopMsg = useChatStore((s) => s.setPopUpMessage);
+
+  useEffect(() => {
+    if (
+      allUser?.length &&
+      selectedConversation?.participant_1 &&
+      selectedConversation?.participant_2
+    ) {
+      const targetId =
+        selectedConversation.participant_1.id === user._id
+          ? selectedConversation.participant_2.id
+          : selectedConversation.participant_1.id;
+
+      const userObject = allUser.find((u) => u._id === targetId);
+      setSenderDetails(userObject);
+      setUserDetailsLoading(false);
+    } else {
+      setSenderDetails(null); // fallback if invalid
+    }
+  }, [selectedConversation, allUser, user._id]);
+
   const handleDeleteCon = async (id) => {
+    setIsLoading(true);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/inbox/${id}`,
@@ -16,67 +52,110 @@ const ChatBox = ({ isOpen, selectedUser, func }) => {
         }
       );
       if (!res.ok) {
-        throw new Error("failed to delete");
+        throw new Error((await res.json()).message || "failed to delete");
       }
       const data = await res.json();
-      toast(data.message);
-      setTimeout(() => {
-        location.reload();
-      }, 1000);
+      setPopMsg("conversation deleted successfully");
+      func(id);
     } catch (error) {
-      toast.error(error.message);
+      console.error("Delete Error:", error.message);
+      setPopMsg("there is a problem deleting conversation");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <>
-      <div
-        className={`bg-slate-600 ${
-          isOpen ? " w-full" : " hidden md:flex"
-        }  relative text-white h-[90vh] md:h-[500px] md:w-3/4
-          flex-col items-center justify-baseline rounded-r-2xl`}
-      >
-        <FaArrowCircleLeft
-          onClick={() => {
-            func(false);
-          }}
-          className="absolute md:hidden cursor-pointer
-         left-0.5 top-0.5 text-2xl text-gray-700 bg-white rounded-full"
-        />
-        {isOpen ? (
-          <div className="w-full h-full">
-            <div className="flex items-center justify-around h-2/12 w-full bg-slate-500">
-              {selectedUser.participant.avatar ? (
+    <div
+      className={`z-50 ${
+        isOpen ? "flex w-full" : "hidden md:flex"
+      } relative text-white h-[100vh] flex-col items-start justify-between`}
+    >
+      <FaArrowCircleLeft
+        onClick={() => func(selectedConversation._id)}
+        className="absolute md:hidden cursor-pointer left-0.5 top-0.5 text-2xl text-gray-700 bg-white rounded-full"
+      />
+
+      {isOpen ? (
+        <div className="w-full h-full flex flex-col justify-between">
+          {/* Header */}
+          <div className="flex items-center border-gray-300/50 h-1/9 shadow justify-around border-b w-full">
+            <div className="relative">
+              {senderDetails?.avatar ? (
                 <img
-                  src={selectedUser.participant.avatar}
-                  className="h-10 w-10 aspect-square object-cover rounded-full"
-                  alt="selectedUser"
+                  src={senderDetails.avatar}
+                  className="h-8 w-8 ring-2 ring-gray-700 aspect-square object-cover rounded-full"
+                  alt="selectedConversation"
                 />
               ) : (
-                <IoPersonCircle className="text-[56px]" />
+                <IoPersonCircle className="text-[32px] text-gray-700 ring-2 ring-gray-700 rounded-full" />
               )}
-              <p>{selectedUser.participant.name}</p>
+
+              {/* Active indicator */}
+              {senderDetails?.active ? (
+                <div className="absolute -right-1 -bottom-1">
+                  <span className="relative flex size-3">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
+                    <span className="relative inline-flex size-3 rounded-full bg-green-600"></span>
+                  </span>
+                </div>
+              ) : senderDetails?.updatedAt ? (
+                <div className="absolute text-[7px] h-[12px] w-[12px] bg-white ring-[0.5px] text-black rounded-full -right-1 ring-green-400 -bottom-1">
+                  <p className="justify-self-center my-auto text-shadow-2xs">
+                    {timeAgo(senderDetails.updatedAt)}
+                  </p>
+                </div>
+              ) : null}
+            </div>
+
+            <p className="text-gray-500">{senderDetails?.name || "..."}</p>
+
+            {isLoading ? (
+              <ClipLoader
+                color="gray"
+                loading={true}
+                size={20}
+                aria-label="Loading Spinner"
+                data-testid="loader"
+              />
+            ) : (
               <IoTrash
                 className="cursor-pointer text-red-500"
-                onClick={() => {
-                  handleDeleteCon(selectedUser._id);
-                }}
+                onClick={() => handleDeleteCon(selectedConversation._id)}
               />
-            </div>
-            <div className="w-full flex flex-col p-3 h-10/12 justify-end">
-              <Messages id={selectedUser._id} />
-              <div className="w-full">
-                <SendMessage id={selectedUser._id} />
-              </div>
-            </div>
+            )}
           </div>
-        ) : (
-          <p className="flex w-full h-full items-center justify-center">
-            select a user to talk
-          </p>
-        )}
-      </div>
-    </>
+
+          {/* Body */}
+          <div className="w-full flex flex-col h-8/9 justify-end">
+            {!userDetailsLoading &&
+            selectedConversation?._id &&
+            senderDetails?._id ? (
+              <>
+                {" "}
+                <Messages
+                  id={selectedConversation._id}
+                  participant={senderDetails}
+                  unseenCount={unseenCount}
+                  isTyping={isTyping}
+                />
+                <div className="w-full">
+                  <SendMessage id={selectedConversation._id} />
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <ClipLoader color="gray" size={24} />
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <p className="flex w-full h-full items-center justify-center">
+          Select a user to talk
+        </p>
+      )}
+    </div>
   );
 };
 

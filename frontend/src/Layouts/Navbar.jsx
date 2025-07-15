@@ -3,13 +3,15 @@ import Cookies from "js-cookie";
 import { useLocation } from "react-router-dom";
 import { IoLogIn, IoMail, IoPersonCircle } from "react-icons/io5";
 import { FaUsersViewfinder } from "react-icons/fa6";
-import { toast, ToastContainer } from "react-toastify";
+import useChatStore from "../stores/chatStore"; // or correct path
 
 const Navbar = ({ data }) => {
   const [error, setError] = useState(null);
-  const username = JSON.parse(localStorage.getItem("username"))?.value;
+  const username = JSON.parse(localStorage.getItem("userId"))?.value;
   const Location = useLocation();
   const pathname = Location.pathname;
+
+  const isOpen = useChatStore((s) => s.isOpenGlobal);
 
   const fetchData = async () => {
     try {
@@ -35,18 +37,19 @@ const Navbar = ({ data }) => {
   return (
     <>
       <div
-        className="flex flex-row justify-center p-4 uppercase lg:px-80 px-20
-       items-center space-x-2
-      bg-sky-400 text-blue-700"
+        className={`${
+          isOpen ? "hidden" : "flex fixed"
+        }  flex-row z-10 bg-white px-6 
+          bottom-0 justify-between w-full py-4 uppercase lg:px-80
+       items-center`}
       >
-        <ToastContainer />
         {data.isLoggedIn ? (
           <a
             href={`/user-info/${username}`}
             className={`p-2 px-4 ${
               pathname === `/user-info/${username}`
-                ? "border-b-3 border-black/50 bg-white/90 text-black"
-                : "text-gray-700"
+                ? "text-blue-600"
+                : "text-gray-600"
             } 
       nav-bar-component`}
           >
@@ -57,9 +60,7 @@ const Navbar = ({ data }) => {
           <a
             href="/login"
             className={`p-2 px-4 ${
-              pathname === `/login`
-                ? "border-b-3 border-black/50 bg-white/90 text-black"
-                : "text-gray-700"
+              pathname === `/login` ? "text-blue-600" : "text-gray-600"
             } 
         nav-bar-component`}
           >
@@ -69,13 +70,10 @@ const Navbar = ({ data }) => {
         )}
         {data.isLoggedIn && (
           <>
-            <hr className=" rotate-90 min-w-10 h-1 bg-sky-900 "></hr>
             <a
               href="/inbox"
               className={`p-2 px-4 ${
-                pathname === `/inbox`
-                  ? "border-b-3 border-black/50 bg-white/90 text-black"
-                  : "text-gray-700"
+                pathname === `/inbox` ? "text-blue-600" : "text-gray-600"
               } 
           nav-bar-component`}
             >
@@ -85,13 +83,10 @@ const Navbar = ({ data }) => {
 
             {data.userData.role === "admin" && (
               <>
-                <hr className=" rotate-90 min-w-10 h-1 bg-sky-900 "></hr>
                 <a
                   href="/users"
                   className={`p-2 px-4 ${
-                    pathname === `/users`
-                      ? " border-b-3 border-black/50 bg-white/90 text-black"
-                      : "text-gray-700"
+                    pathname === `/users` ? "text-blue-600" : "text-gray-600"
                   } 
          nav-bar-component`}
                 >

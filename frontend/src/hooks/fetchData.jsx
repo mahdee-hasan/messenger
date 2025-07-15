@@ -1,6 +1,6 @@
-const fetchData = async (username) => {
+const fetchData = async (userId) => {
   const res = await fetch(
-    `${import.meta.env.VITE_API_URL}/api/login/${username}`,
+    `${import.meta.env.VITE_API_URL}/api/login/${userId}`,
     {
       credentials: "include",
       method: "GET",

@@ -18,3 +18,6 @@
 .nav-photo {
   @apply text-3xl md:text-xl;
 }
+.example {
+  @apply text-4xl font-sans text-red-400;
+}

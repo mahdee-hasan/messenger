@@ -5,8 +5,8 @@ const people = require("../models/people");
 
 const getLogin = async (req, res, next) => {
   try {
-    const user = await people.findOne(
-      { name: req.params.username },
+    const user = await people.findById(
+      req.params.username,
       "name email avatar role mobile"
     );
 

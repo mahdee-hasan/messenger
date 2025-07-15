@@ -1,16 +1,19 @@
+// internal imports
 import React, { useEffect } from "react";
+// external imports
 import picture from "../assets/pic.png";
-import { toast, ToastContainer } from "react-toastify";
+// receive the props as data passed from app component
 const Home = ({ data }) => {
+  //since there is no dynamic changes return static page
   return (
     <div className="flex h-[90vh] relative items-center justify-center">
-      <ToastContainer />
+      {/* an image which will be displayed in the homepage */}
       <img
         src={picture}
         alt="img"
         className="fixed left-0 bottom-0 -z-10 h-[70vh]"
       />
-
+      {/* welcome message */}
       <div
         className="text-gray-900 h-40 justify-between flex
        flex-col  lowercase tracking-widest"
@@ -29,9 +32,10 @@ const Home = ({ data }) => {
           ,
           <br /> make your day with our chat .
         </p>
+        {/* two buttons to go another routes */}
         <div className="flex space-x-3.5">
           <a
-            href={`/user-info/${data.name}`}
+            href={`/user-info/${data._id}`}
             className="uppercase p-3 max-w-44 ma px-4 rounded-xl hover:ring hover:bg-white hover:text-emerald-500
            bg-emerald-500"
           >
@@ -50,5 +54,5 @@ const Home = ({ data }) => {
     </div>
   );
 };
-
+//export the component
 export default Home;

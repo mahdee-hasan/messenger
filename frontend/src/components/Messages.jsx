@@ -1,50 +1,53 @@
 import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
-import moment from "moment";
 import { IoPersonCircle } from "react-icons/io5";
-import { BsThreeDotsVertical } from "react-icons/bs";
 import SingleMessage from "./SingleMessage";
+import useChatStore from "../stores/chatStore";
 
-const socket = io(import.meta.env.VITE_API_URL);
+const socket = io(import.meta.env.VITE_API_URL, {
+  withCredentials: true,
+});
 
-const Messages = ({ id }) => {
-  const [messages, setMessages] = useState([]);
+const Messages = ({ id, participant, unseenCount, isTyping }) => {
+  const [message, setMessage] = useState([]);
   const [activeMenu, setActiveMenu] = useState(null);
   const [messageEditSlot, setMessageEditSlot] = useState(null);
   const [messageDeleting, setMessageDeleting] = useState(1);
-  const [user, setUser] = useState(
-    () => JSON.parse(localStorage.getItem("username")).value
-  );
+  const userId = JSON.parse(localStorage.getItem("userId"))?.value;
   const bottomRef = useRef(null);
+
+  const setMsg = useChatStore((s) => s.setPopUpMessage);
 
   useEffect(() => {
     if (id) getMessage(id);
-  }, [id, messageDeleting]);
+  }, [id, messageDeleting]); // ✅ fixed dependencies
+
   useEffect(() => {
-    const handleMessage = (data) => {
-      if (data.conversation_id === id) setMessages((prev) => [...prev, data]);
+    const handleMessage = ({ data, updatedCon }) => {
+      setMessageDeleting((n) => n + 1);
     };
+
     socket.on("new_message", handleMessage);
     return () => socket.off("new_message", handleMessage);
   }, [id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages]);
+  }, [message, isTyping]);
 
   const getMessage = async (id) => {
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/inbox/message/${id}`,
-        {
-          credentials: "include",
-        }
+        { credentials: "include" }
       );
       const data = await res.json();
       if (!res.ok) throw new Error("Error getting messages");
-      setMessages(data);
+
+      // ✅ Ensure this matches your backend response structure
+      setMessage(data || []);
     } catch (err) {
-      console.error(err);
+      setMsg("Fetch message error:", err);
     }
   };
 
@@ -57,69 +60,102 @@ const Messages = ({ id }) => {
           credentials: "include",
         }
       );
-      const data = await res.json();
-      setActiveMenu(null);
       if (!res.ok) throw new Error("error deleting message");
+      setActiveMenu(null);
     } catch (err) {
-      console.error(err);
+      setMsg(err);
     }
   };
+
   const handleMessageDeleting = (value) => {
     setMessageDeleting(value);
   };
+
+  const onEditToggle = (id) => {
+    setMessageEditSlot((prev) => (prev === id ? null : id));
+  };
+
+  const onMenuToggle = (id) => {
+    setActiveMenu((prev) => (prev === id ? null : id));
+  };
+
   return (
-    <div className="w-full flex flex-col p-3 h-full overflow-y-auto scrollbar-hide">
-      {messages.length ? (
-        messages.map((msg) => (
-          <div
-            key={msg._id}
-            className={`flex items-center my-2 relative ${
-              msg.sender.name === user ? "justify-end" : "justify-start"
-            }`}
-          >
-            {msg.sender.name !== user ? (
-              msg.sender.avatar ? (
+    <div
+      className="w-full flex flex-col p-3 h-full overflow-y-auto scrollbar-hide"
+      onClick={() => {
+        setActiveMenu(null);
+        setMessageEditSlot(null);
+      }}
+    >
+      {message.length ? (
+        <>
+          {message.map((msg, index) => {
+            const showSeenMarker = index === message.length - unseenCount - 1;
+            return (
+              <React.Fragment key={msg._id}>
+                <div
+                  className={`flex items-center my-1 relative ${
+                    msg.sender.id === userId ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  {msg.sender.id !== userId ? (
+                    msg.sender.avatar ? (
+                      <img
+                        src={msg.sender.avatar}
+                        className="h-6 w-6 mr-3 ring-2 mt-3 ring-blue-500 rounded-full object-cover"
+                        alt="user"
+                      />
+                    ) : (
+                      <IoPersonCircle className="text-[28px] mt-3 text-gray-700" />
+                    )
+                  ) : null}
+
+                  <SingleMessage
+                    message={msg}
+                    userId={userId}
+                    activeMenu={activeMenu}
+                    messageEditSlot={messageEditSlot}
+                    onEditToggle={onEditToggle}
+                    onMenuToggle={onMenuToggle}
+                    onDelete={handleDelete}
+                    func={handleMessageDeleting}
+                  />
+                </div>
+
+                {showSeenMarker && (
+                  <div className="flex w-full mt-2 justify-end">
+                    {participant.avatar ? (
+                      <img
+                        src={participant.avatar}
+                        alt="user"
+                        className="h-3 w-3 object-cover rounded-full ring ring-black"
+                      />
+                    ) : (
+                      <IoPersonCircle className="text-[12px] text-black rounded-full ring ring-black" />
+                    )}
+                  </div>
+                )}
+              </React.Fragment>
+            );
+          })}
+          {isTyping.includes(id) && (
+            <div className="flex h-20 items-center text-sm text-gray-500">
+              {participant.avatar ? (
                 <img
-                  src={msg.sender.avatar}
-                  className="h-8 w-8 mr-3 ring-2 ring-blue-500 rounded-full object-cover"
+                  src={participant.avatar}
+                  className="h-6 w-6 mr-3 ring-2 mt-3 ring-blue-500 rounded-full object-cover"
                   alt="user"
                 />
               ) : (
-                <IoPersonCircle className="text-4xl" />
-              )
-            ) : null}
-
-            <BsThreeDotsVertical
-              className="cursor-pointer ml-2"
-              onClick={() =>
-                setActiveMenu((prev) => (prev === msg._id ? null : msg._id))
-              }
-            />
-
-            <SingleMessage
-              message={msg}
-              user={user}
-              activeMenu={activeMenu}
-              messageEditSlot={messageEditSlot}
-              onEditToggle={(id) =>
-                setMessageEditSlot((prev) => (prev === id ? null : id))
-              }
-              onMenuToggle={(id) =>
-                setActiveMenu((prev) => (prev === id ? null : id))
-              }
-              onDelete={handleDelete}
-              func={handleMessageDeleting}
-            />
-
-            <p
-              className={`text-[10px] text-gray-300 absolute -bottom-3.5 ${
-                msg.sender.name !== user ? "left-12" : ""
-              }`}
-            >
-              {moment(msg.createdAt).fromNow()}
-            </p>
-          </div>
-        ))
+                <IoPersonCircle className="text-[28px] mt-3 text-gray-700" />
+              )}
+              <p className="bg-white normal-case shadow-md p-1.5 text-blue-500 rounded-xl rounded-bl-none">
+                {" "}
+                Typing...
+              </p>
+            </div>
+          )}
+        </>
       ) : (
         <p className="text-center text-gray-300 mt-4">No messages yet</p>
       )}

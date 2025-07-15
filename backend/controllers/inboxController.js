@@ -4,42 +4,28 @@ const conversation = require("../models/conversation");
 const message = require("../models/message");
 const fs = require("fs");
 const path = require("path");
+const cloudinary = require("../cloudinaryConfig");
+const deleteUsersConversation = require("../utilities/deleteAttachment");
+
 //get inbox
 const getInbox = async (req, res, next) => {
   const conversations = await conversation
     .find({
       $or: [
-        { "creator.id": req.user.userId },
-        { "participant.id": req.user.userId },
+        { "participant_1.id": req.user.userId },
+        { "participant_2.id": req.user.userId },
       ],
     })
-    .sort("-last_updated");
-  let editedConversations = [];
+    .sort("-lastMessage.time");
 
-  try {
-    conversations.forEach((convo) => {
-      const convoObj = convo.toObject();
-
-      if (convoObj.participant.id.toString() === req.user.userId.toString()) {
-        // Swap participant and creator
-        const temp = convoObj.creator;
-        convoObj.creator = convoObj.participant;
-        convoObj.participant = temp;
-      }
-
-      editedConversations.push(convoObj);
-    });
-  } catch (error) {
-    editedConversations = [];
-  }
-  res.status(200).json(editedConversations);
+  let activeIds = [];
+  const activePeople = await people.find({ active: true }, "_id");
+  activePeople.map((people) => activeIds.push(people.id.toString()));
+  res.status(200).json({ conversations, activeIds });
 };
 const searchUser = async (req, res, next) => {
   const value = req.body.user.replace("+88", "");
 
-  if (!value) {
-    return res.status(200).json([]);
-  }
   const name_regexp = new RegExp(escapeRegExp(value), "i");
   const mobile_regexp = new RegExp("^" + escapeRegExp("+88" + value));
   const email_regexp = new RegExp("^" + escapeRegExp(value) + "$", "i");
@@ -60,17 +46,17 @@ const addConversation = async (req, res, next) => {
   let newCon;
   const user = await people.findOne({ name: req.user.username }, "name avatar");
   const match = await conversation.find({
-    "participant.id": req.body.participant.id,
-    "creator.id": user._id,
+    "participant_1.id": req.body.participant_2.id,
+    "participant_2.id": user._id,
   });
 
   if (
     match.length < 1 &&
-    JSON.stringify(user._id) !== JSON.stringify(req.body.participant.id)
+    JSON.stringify(user._id) !== JSON.stringify(req.body.participant_2.id)
   ) {
     newCon = new conversation({
       ...req.body,
-      creator: {
+      participant_1: {
         id: user._id,
         name: user.name,
         avatar: user.avatar,
@@ -79,19 +65,17 @@ const addConversation = async (req, res, next) => {
 
     try {
       const result = await newCon.save();
-
-      res.status(200).json({ message: "conversation added successfully" });
+      res
+        .status(200)
+        .json({ message: "conversation added successfully", con: result });
     } catch (error) {
       res.status(500).json({
-        errors: {
-          common: {
-            msg: "unknown error occurred",
-          },
-        },
+        message: "unknown error occurred",
       });
+      console.log(error.message);
     }
   } else if (
-    JSON.stringify(user._id) === JSON.stringify(req.body.participant.id)
+    JSON.stringify(user._id) === JSON.stringify(req.body.participant_2.id)
   ) {
     res.status(500).json({
       message: "you want to chat with you !!! look how lonely are you",
@@ -105,56 +89,34 @@ const deleteConversation = async (req, res, next) => {
   try {
     // Delete conversation
     const result = await conversation.findById(req.params.id);
-
     if (!result) {
       return res.status(404).json({ message: "Conversation not found" });
     }
-
-    // Find all attachments
-    const attachments = await message.find(
-      { conversation_id: req.params.id },
-      "attachment"
-    );
-
-    // Delete all files
-    if (attachments && attachments.length > 0) {
-      for (const msg of attachments) {
-        for (const filename of msg.attachment) {
-          try {
-            fs.unlink(
-              path.join(__dirname, `../public/uploads/attachments/${filename}`),
-              (err) => {
-                if (err) {
-                  throw new Error(err.message);
-                } else {
-                }
-              }
-            );
-          } catch (err) {
-            throw new Error("File delete error:", err.message);
-          }
-        }
-      }
+    const resOf = await deleteUsersConversation(req.params.id);
+    if (!resOf.success) {
+      throw new Error(res.message);
     }
-    await message
-      .deleteMany({ conversation_id: req.params.id })
-      .catch((err) => {
-        throw new Error(err.message);
-      });
     await conversation.findByIdAndDelete(req.params.id).catch((err) => {
       throw new Error(err.message);
     });
     res.status(200).json({ message: "deleted successfully" });
   } catch (error) {
-    res.status(500).json({ message: "error occurred" });
+    res.status(500).json({ message: "error occurred" + error.message });
+    console.log("catch", error.message);
   }
 };
 
 const sendMessage = async (req, res, next) => {
   try {
-    const selectedConversation = await conversation.findOneAndUpdate(
-      { _id: req.body.conversation_id },
-      { $set: { last_updated: Date.now() } },
+    const selectedConversation = await conversation.findByIdAndUpdate(
+      req.body.conversation_id,
+      {
+        lastMessage: {
+          text: req.body.text,
+          time: Date.now(),
+          sender: req.user.username,
+        },
+      },
       { new: true }
     );
 
@@ -171,8 +133,8 @@ const sendMessage = async (req, res, next) => {
       {
         _id: {
           $in: [
-            selectedConversation.creator.id,
-            selectedConversation.participant.id,
+            selectedConversation.participant_1.id,
+            selectedConversation.participant_2.id,
           ],
         },
       },
@@ -181,6 +143,23 @@ const sendMessage = async (req, res, next) => {
 
     const receiver = participants.find((p) => !p._id.equals(sender._id));
 
+    // Check if receiver is participant_1 or participant_2 and update accordingly
+    let updateField;
+    if (receiver._id.equals(selectedConversation.participant_1.id)) {
+      updateField = "participant_1.unseenCount";
+    } else if (receiver._id.equals(selectedConversation.participant_2.id)) {
+      updateField = "participant_2.unseenCount";
+    }
+    let updatedCon = {};
+    if (updateField) {
+      updatedCon = await conversation.findByIdAndUpdate(
+        req.body.conversation_id,
+        {
+          $inc: { [updateField]: 1 },
+        },
+        { new: true }
+      );
+    }
     const newMessage = new message({
       text: req.body.text,
       attachment: req.uploadedFiles,
@@ -198,22 +177,47 @@ const sendMessage = async (req, res, next) => {
     });
 
     const data = await newMessage.save();
-    global.io.emit("new_message", data);
+
+    global.io.emit("new_message", { data, updatedCon });
 
     res.status(200).json({ message: "delivered" });
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({ message: "not sent" });
   }
 };
 
 const getMessage = async (req, res, next) => {
   try {
+    const selectedConversation = await conversation.findById(
+      req.params.conversation_id,
+      "participant_1 participant_2"
+    );
+    let updateField;
+    if (selectedConversation.participant_1.id.equals(req.user.userId)) {
+      updateField = "participant_1.unseenCount";
+    } else if (selectedConversation.participant_2.id.equals(req.user.userId)) {
+      updateField = "participant_2.unseenCount";
+    }
+    let updatedCon = {};
+    if (updateField) {
+      updatedCon = await conversation.findByIdAndUpdate(
+        req.params.conversation_id,
+        {
+          $set: { [updateField]: 0 },
+        },
+        { new: true }
+      );
+    }
     const messages = await message.find({
       conversation_id: req.params.conversation_id,
       deletedFor: { $nin: [req.user.username] },
     });
+
+    global.io.emit("get_message", { message, updatedCon });
     res.status(200).json(messages);
   } catch (error) {
+    console.log(error.message);
     res.json({ error: error.message });
   }
 };
@@ -227,10 +231,11 @@ const getLastMessage = async (req, res, next) => {
       ],
       deletedFor: { $nin: [req.user.username] },
     });
-
+    const last_message = messages[messages.length - 1];
     res.status(200).json({
-      sender: messages[messages.length - 1].sender.name,
-      lastMessage: messages[messages.length - 1].text,
+      sender: last_message.sender.name,
+      lastMessage: last_message.text,
+      seen: last_message.seen,
     });
   } catch (error) {
     res.status(500).json({ lastMessage: "no messages", error: error.message });
@@ -238,11 +243,14 @@ const getLastMessage = async (req, res, next) => {
 };
 const deleteForEveryone = async (req, res, next) => {
   try {
+    const foundMessage = await message.findById(req.params.id);
+    const oldMessage = foundMessage.text;
     const result = await message.updateOne(
       { _id: req.params.id },
       {
         $addToSet: {
           deletedFor: "everyone",
+          old_text: oldMessage,
         },
         $set: {
           text: req.user.username + " unsent the message",
@@ -277,18 +285,100 @@ const deleteForME = async (req, res, next) => {
 };
 const updateMessage = async (req, res, next) => {
   try {
+    const foundMessage = await message.findById(req.params.id);
+    const oldMessage = foundMessage.text;
+
     const result = await message.updateOne(
       { _id: req.params.id },
-      { $set: { text: req.body.text } }
+      {
+        $set: { text: req.body.text },
+        $addToSet: { old_text: oldMessage },
+      }
     );
+
     global.io.emit("deleted_message", result);
+
     res
       .status(200)
-      .json({ success: true, message: "message updated successfully" });
+      .json({ success: true, message: "Message updated successfully" });
   } catch (error) {
-    res.status(500).json({ success: false, message: "error updating message" });
+    console.log(error.message);
+    res.status(500).json({ success: false, message: "Error updating message" });
   }
 };
+const openChat = async (req, res, next) => {
+  try {
+    const con = await conversation.findByIdAndUpdate(
+      req.params.id,
+      {
+        $addToSet: { isOpen: req.user.username },
+      },
+      { new: true }
+    );
+
+    res.status(200).json(con);
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err });
+  }
+};
+const closeChat = async (req, res, next) => {
+  try {
+    const con = await conversation.findByIdAndUpdate(
+      req.params.id,
+      {
+        $pull: { isOpen: req.user.username },
+      },
+      { new: true }
+    );
+    res.status(200).json(con);
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err });
+  }
+};
+const closeAllChat = async (req, res, next) => {
+  try {
+    const con = await conversation.updateMany(
+      { isOpen: req.user.username },
+      { $pull: { isOpen: req.user.username } }
+    );
+
+    res.status(200).json({ success: true, message: "successfully closed" });
+  } catch (err) {
+    res.status(500).json({ message: "Something went wrong", error: err });
+  }
+};
+
+const typingTimers = {};
+
+const startTyping = async (req, res, next) => {
+  try {
+    const { id: conversationId } = req.params;
+    const username = req.user.username;
+    const key = `${conversationId}_${username}`;
+    global.io.emit("typing-started", {
+      conversationId,
+      username,
+    });
+
+    if (typingTimers[key]) {
+      clearTimeout(typingTimers[key]);
+    }
+
+    typingTimers[key] = setTimeout(() => {
+      global.io.emit("typing-stopped", {
+        conversationId,
+        username,
+      });
+
+      delete typingTimers[key];
+    }, 1000);
+
+    res.status(200).json({ success: true });
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+};
+
 module.exports = {
   getInbox,
   searchUser,
@@ -300,4 +390,8 @@ module.exports = {
   deleteForEveryone,
   deleteForME,
   updateMessage,
+  openChat,
+  closeChat,
+  closeAllChat,
+  startTyping,
 };

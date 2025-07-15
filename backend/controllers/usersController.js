@@ -5,12 +5,16 @@ const path = require("path");
 const message = require("../models/message");
 const conversation = require("../models/conversation");
 const cloudinary = require("../cloudinaryConfig");
+const deleteUsersConversation = require("../utilities/deleteAttachment");
 
 //get users
 const getUsers = async (req, res, next) => {
-  if (req.user.role === "admin") {
-    const users = await people.find();
-    res.status(200).json(users);
+  if (req.user.role) {
+    const users = await people
+      .find({ name: { $ne: req.user.username } })
+      .sort({ active: -1, updatedAt: -1 });
+    const user = await people.findById(req.user.userId);
+    res.status(200).json({ user, users });
   } else {
     res.status(403).json({ message: "something went wrong" });
   }
@@ -107,46 +111,41 @@ const deleteUser = async (req, res, next) => {
   }
 };
 
-const deleteUsersConversation = async (conversationId) => {
-  try {
-    // Step 2: Find all attachments
-    const attachments = await message.find(
-      { conversation_id: conversationId },
-      "attachment"
-    );
+// const deleteUsersConversation = async (conversationId) => {
+//   try {
+//     // Step 2: Find all attachments
+//     const attachments = await message.find(
+//       { conversation_id: conversationId },
+//       "attachment"
+//     );
 
-    // Step 3: Delete all attachment files
-    for (const msg of attachments) {
-      if (msg.attachment && msg.attachment.length > 0) {
-        for (const filename of msg.attachment) {
-          const filePath = path.join(
-            __dirname,
-            `../public/uploads/attachments/${filename}`
-          );
-          try {
-            fs.unlink(filePath, (err) => {
-              if (err) {
-                throw new Error(err.message);
-              }
-            });
-          } catch (err) {
-            throw new Error(
-              `Failed to delete file ${filename}: ${err.message}`
-            );
-          }
-        }
-      }
-    }
+//     // Step 3: Delete all attachment files
+//     if (attachments && attachments.length > 0) {
+//       for (const msg of attachments) {
+//         for (const filename of msg.attachment) {
+//           try {
+//             if (filename.url && filename.public_id) {
+//               const res = await cloudinary.uploader.destroy(filename.public_id);
+//               if (!res) {
+//                 throw new Error("error deleting avatar from cloudinary");
+//               }
+//             }
+//           } catch (err) {
+//             throw new Error("File delete error:", err.message);
+//           }
+//         }
+//       }
+//     }
 
-    // Step 4: Delete messages
-    await message.deleteMany({ conversation_id: conversationId });
+//     // Step 4: Delete messages
+//     await message.deleteMany({ conversation_id: conversationId });
 
-    return { success: true, message: "Conversation and messages deleted" };
-  } catch (error) {
-    console.error("Error in deleteUsersConversation:", error.message);
-    return { success: false, message: error.message };
-  }
-};
+//     return { success: true, message: "Conversation and messages deleted" };
+//   } catch (error) {
+//     console.error("Error in deleteUsersConversation:", error.message);
+//     return { success: false, message: error.message };
+//   }
+// };
 
 module.exports = {
   getUsers,
