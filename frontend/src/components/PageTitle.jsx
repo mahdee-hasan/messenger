@@ -1,13 +1,11 @@
 import React from "react";
-import { HelmetProvider, Helmet } from "react-helmet-async";
+import { HeadProvider, Title } from "react-head";
 
 const PageTitle = ({ title }) => {
   return (
-    <HelmetProvider>
-      <Helmet>
-        <title>{title}</title>
-      </Helmet>
-    </HelmetProvider>
+    <HeadProvider>
+      <Title>{title}</Title>
+    </HeadProvider>
   );
 };
 
