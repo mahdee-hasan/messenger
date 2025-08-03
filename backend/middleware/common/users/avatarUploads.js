@@ -11,9 +11,7 @@ const avatarUpload = (req, res, next) => {
   upload.any()(req, res, (err) => {
     if (err) {
       return res.status(400).json({
-        errors: {
-          avatar: { msg: err.message },
-        },
+        error: "error uploading cover",
       });
     }
 

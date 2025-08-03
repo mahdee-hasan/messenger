@@ -43,45 +43,68 @@ const searchUser = async (req, res, next) => {
   res.status(200).json(user);
 };
 const addConversation = async (req, res, next) => {
-  let newCon;
-  const user = await people.findOne({ name: req.user.username }, "name avatar");
-  const match = await conversation.find({
-    "participant_1.id": req.body.participant_2.id,
-    "participant_2.id": user._id,
-  });
-
-  if (
-    match.length < 1 &&
-    JSON.stringify(user._id) !== JSON.stringify(req.body.participant_2.id)
-  ) {
-    newCon = new conversation({
-      ...req.body,
-      participant_1: {
-        id: user._id,
-        name: user.name,
-        avatar: user.avatar,
-      },
+  try {
+    let newCon;
+    const user = await people.findById(req.user.userId, "name avatar");
+    const match = await conversation.find({
+      "participant_1.id": req.body.participant_2.id,
+      "participant_2.id": user._id,
     });
 
-    try {
-      const result = await newCon.save();
-      res
-        .status(200)
-        .json({ message: "conversation added successfully", con: result });
-    } catch (error) {
-      res.status(500).json({
-        message: "unknown error occurred",
-      });
-      console.log(error.message);
+    if (!match.length) {
+      await Promise.all([
+        people.findByIdAndUpdate(
+          req.user.userId,
+          {
+            $addToSet: { "stats.connected": req.body.participant_2.id },
+          },
+          { timestamps: false }
+        ),
+        people.findByIdAndUpdate(
+          req.body.participant_2.id,
+          {
+            $addToSet: { "stats.connected": req.user.userId },
+          },
+          { timestamps: false }
+        ),
+      ]);
     }
-  } else if (
-    JSON.stringify(user._id) === JSON.stringify(req.body.participant_2.id)
-  ) {
-    res.status(500).json({
-      message: "you want to chat with you !!! look how lonely are you",
-    });
-  } else {
-    res.status(500).json({ message: "chat already exist" });
+    if (
+      !match.length &&
+      JSON.stringify(user._id) !== JSON.stringify(req.body.participant_2.id)
+    ) {
+      newCon = new conversation({
+        ...req.body,
+        participant_1: {
+          id: user._id,
+          name: user.name,
+          avatar: user.avatar,
+        },
+      });
+
+      try {
+        const result = await newCon.save();
+        res
+          .status(200)
+          .json({ message: "conversation added successfully", con: result });
+      } catch (error) {
+        res.status(500).json({
+          message: "unknown error occurred",
+        });
+        console.log(error.message);
+      }
+    } else if (
+      !match.length &&
+      JSON.stringify(user._id) === JSON.stringify(req.body.participant_2.id)
+    ) {
+      res.status(500).json({
+        message: "you want to chat with you !!! look how lonely are you",
+      });
+    } else {
+      res.status(500).json({ message: "chat already exist" });
+    }
+  } catch (error) {
+    console.log(error.message);
   }
 };
 
@@ -89,6 +112,25 @@ const deleteConversation = async (req, res, next) => {
   try {
     // Delete conversation
     const result = await conversation.findById(req.params.id);
+    if (result) {
+      await Promise.all([
+        people.findByIdAndUpdate(
+          result.participant_1.id,
+          {
+            $pull: { "stats.connected": result.participant_2.id },
+          },
+          { timestamps: false }
+        ),
+        people.findByIdAndUpdate(
+          result.participant_2.id,
+          {
+            $pull: { "stats.connected": result.participant_1.id },
+          },
+          { timestamps: false }
+        ),
+      ]);
+    }
+
     if (!result) {
       return res.status(404).json({ message: "Conversation not found" });
     }
@@ -353,11 +395,11 @@ const typingTimers = {};
 const startTyping = async (req, res, next) => {
   try {
     const { id: conversationId } = req.params;
-    const username = req.user.username;
-    const key = `${conversationId}_${username}`;
+    const userId = req.user.userId;
+    const key = `${conversationId}_${userId}`;
     global.io.emit("typing-started", {
       conversationId,
-      username,
+      userId,
     });
 
     if (typingTimers[key]) {
@@ -367,7 +409,7 @@ const startTyping = async (req, res, next) => {
     typingTimers[key] = setTimeout(() => {
       global.io.emit("typing-stopped", {
         conversationId,
-        username,
+        userId,
       });
 
       delete typingTimers[key];

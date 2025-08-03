@@ -4,18 +4,17 @@ import React, { useEffect } from "react";
 import picture from "../assets/pic.png";
 // receive the props as data passed from app component
 const Home = ({ data }) => {
-  //since there is no dynamic changes return static page
   return (
-    <div className="flex h-[90vh] relative items-center justify-center">
+    <div className="flex h-[90vh] dark:bg-gray-700 relative items-center justify-center">
       {/* an image which will be displayed in the homepage */}
       <img
         src={picture}
         alt="img"
-        className="fixed left-0 bottom-0 -z-10 h-[70vh]"
+        className="fixed left-0 bottom-0 z-1 h-[70vh]"
       />
       {/* welcome message */}
       <div
-        className="text-gray-900 h-40 justify-between flex
+        className="text-gray-900  h-40 justify-between flex
        flex-col  lowercase tracking-widest"
       >
         <p

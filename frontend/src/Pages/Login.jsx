@@ -80,7 +80,7 @@ const Login = ({ data }) => {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex items-center  max-w-3xl mx-auto justify-center min-h-screen bg-gray-100">
       {/* make form to fill an object of username and users password */}
       <form
         onSubmit={handleSubmit}

@@ -67,9 +67,9 @@ const ChatBox = ({
 
   return (
     <div
-      className={`z-50 ${
-        isOpen ? "flex w-full" : "hidden md:flex"
-      } relative text-white h-[100vh] flex-col items-start justify-between`}
+      className={` ${
+        isOpen ? "flex w-full z-50" : "hidden md:flex md:w-full"
+      } relative text-white bg-white h-[100vh] md:h-[88vh] flex-col items-start justify-between`}
     >
       <FaArrowCircleLeft
         onClick={() => func(selectedConversation._id)}
@@ -100,8 +100,8 @@ const ChatBox = ({
                   </span>
                 </div>
               ) : senderDetails?.updatedAt ? (
-                <div className="absolute text-[7px] h-[12px] w-[12px] bg-white ring-[0.5px] text-black rounded-full -right-1 ring-green-400 -bottom-1">
-                  <p className="justify-self-center my-auto text-shadow-2xs">
+                <div className="absolute text-[7px] max-w-20  bg-white ring-[0.5px] text-black rounded-full -right-1 ring-green-400 -bottom-1">
+                  <p className="justify-self-center my-auto truncate text-shadow-2xs">
                     {timeAgo(senderDetails.updatedAt)}
                   </p>
                 </div>
@@ -151,7 +151,7 @@ const ChatBox = ({
           </div>
         </div>
       ) : (
-        <p className="flex w-full h-full items-center justify-center">
+        <p className="flex md:w-full text-black h-full items-center justify-center">
           Select a user to talk
         </p>
       )}

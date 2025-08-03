@@ -5,18 +5,9 @@ const people = require("../models/people");
 
 const getLogin = async (req, res, next) => {
   try {
-    const user = await people.findById(
-      req.params.username,
-      "name email avatar role mobile"
-    );
+    const user = await people.findById(req.params.userId);
 
-    if (req.user.username === user.name && user.role === "user") {
-      res.status(200).json(user);
-    } else if (req.user.username === user.name && user.role === "admin") {
-      res.status(200).json(user);
-    } else {
-      res.status(404).json({ message: "not found" });
-    }
+    res.status(200).json(user);
   } catch (error) {
     res.status(404).json({ message: "user not found" });
   }

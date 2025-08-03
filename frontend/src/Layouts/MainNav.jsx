@@ -1,0 +1,53 @@
+import React, { useEffect, useState } from "react";
+import {
+  FaFacebookMessenger,
+  FaNewspaper,
+  FaPlus,
+  FaUser,
+  FaUsers,
+} from "react-icons/fa";
+import { Link } from "react-router-dom";
+import useChatStore from "../stores/chatStore";
+
+const MainNav = ({ data }) => {
+  const isAdmin = data?.userData?.role === "admin";
+  const userId = data?.userData?._id;
+  const navItems = [
+    { sr: 1, title: "feed", to: "/", icon: FaNewspaper },
+    { sr: 2, title: "messenger", to: "/inbox", icon: FaFacebookMessenger },
+    { sr: 3, title: "add-post", to: "/add-post", icon: FaPlus },
+    ...(isAdmin
+      ? [{ sr: 4, title: "users", to: "/users", icon: FaUsers }]
+      : []),
+    { sr: 5, title: "user", to: `/user-info/${userId}`, icon: FaUser },
+  ];
+
+  const isOpen = useChatStore((s) => s.isOpenGlobal);
+
+  return (
+    <nav
+      className={`${
+        isOpen ? "hidden md:block" : ""
+      } bg-gradient-to-r from-emerald-400 to-green-400
+       text-white px-6 py-4 shadow-lg sticky max-w-3xl mx-auto top-0 z-50`}
+    >
+      <div className="max-w-3xl mx-auto flex justify-between items-center">
+        <h1 className="text-2xl font-bold">SocialBox</h1>
+        <div className="flex items-center gap-3">
+          {navItems.map((item) => (
+            <Link
+              key={item.sr}
+              title={item.title}
+              to={item.to}
+              className="flex items-center gap-2 px-3 py-1.5 bg-white text-indigo-600 rounded-full shadow hover:bg-indigo-100 transition"
+            >
+              <item.icon />
+            </Link>
+          ))}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default MainNav;

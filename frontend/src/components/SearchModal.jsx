@@ -10,6 +10,7 @@ const SearchModal = ({ isOpen, setIsOpen, onClose, openFunc }) => {
   const [users, setUsers] = useState([]);
   const timeoutRef = useRef(null);
   const setMsg = useChatStore((s) => s.setPopUpMessage);
+
   const handleSearch = (e) => {
     const value = e.target.value;
 
@@ -84,11 +85,11 @@ const SearchModal = ({ isOpen, setIsOpen, onClose, openFunc }) => {
     <Modal
       isOpen={isOpen}
       onRequestClose={onClose}
-      className="w-full h-[100vh] relative  p-5 rounded-xl mx-auto shadow-lg outline-none"
+      className="w-full h-[100vh] relative mt-28 p-5 rounded-xl mx-auto shadow-lg outline-none"
       overlayClassName="fixed inset-0 bg-gray-100 flex justify-center items-center"
     >
       <FaArrowLeft
-        className="fixed top-1 ring rounded-full bg-gray-300/50 left-1 text-xl text-gray-700 "
+        className="fixed top-20 ring rounded-full bg-gray-300/50 left-1 text-xl text-gray-700 "
         onClick={() => {
           setIsOpen(false);
         }}

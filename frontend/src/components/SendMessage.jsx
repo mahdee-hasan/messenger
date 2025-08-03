@@ -20,7 +20,10 @@ const SendMessage = ({ id }) => {
       if (!res.ok) {
         throw new Error("error start typing");
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error.message);
+    }
+
     if (e.target.name === "attachment") {
       const files = Array.from(e.target.files);
       if (files.length > 0) {

@@ -18,6 +18,8 @@ const {
 const loginRouter = require("./router/loginRouter");
 const inboxRouter = require("./router/inboxRouter");
 const usersRouter = require("./router/usersRouter");
+const feedsRouter = require("./router/feedsRouter");
+const userRouter = require("./router/userRouter");
 const conversation = require("./models/conversation");
 
 // config
@@ -63,6 +65,8 @@ app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use("/api/login", loginRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/inbox", inboxRouter);
+app.use("/api/feeds", feedsRouter);
+app.use("/api/user", userRouter);
 
 // error handling
 app.use(notFoundHandler);

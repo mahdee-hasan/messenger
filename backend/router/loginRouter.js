@@ -8,7 +8,7 @@ const {
 } = require("../middleware/common/login/loginValidators");
 const checkLogin = require("../middleware/common/checkLogin");
 
-router.get("/:username", checkLogin, getLogin);
+router.get("/:userId", checkLogin, getLogin);
 router.post("/", doLoginValidators, loginValidationHandler, login);
 router.delete("/", logout);
 

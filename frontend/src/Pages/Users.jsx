@@ -84,23 +84,26 @@ const Users = () => {
     );
   }
   return (
-    <div className="w-full  h-[100vh] overflow-scroll scrollbar-hide">
+    <div className="max-w-3xl mx-auto  h-[100vh] overflow-scroll scrollbar-hide">
       <PageTitle title="users - chat application" />
       <p className="text-xl text-center border-b shadow-2xl border-gray-300/50 h-14 p-3 ">
-        user
+        users
       </p>
-      <div className=" sticky z-50 border-b border-gray-400/50 bg-gray-100 top-0">
+      <div className=" sticky z-40 border-b border-gray-400/50 bg-gray-100 dark:bg-gray-600 top-0">
         <button
           onClick={() => location.replace("/add-user")}
-          className="hover:bg-gray-100 cursor-pointer flex justify-center w-full items-center h-14"
+          className="hover:bg-gray-100 dark:hover:bg-gray-500 cursor-pointer flex justify-center w-full items-center h-14"
         >
           <IoAddCircleSharp className="text-2xl" />
         </button>
       </div>
-      <div className="w-full bg-white p-3 ">
-        <table className="w-full scrollbar-hide">
+      <div className="w-full p-3  dark:text-gray-200">
+        <table className="w-full  scrollbar-hide">
           <thead>
-            <tr className="border-b h-10 sticky bg-gray-50 top-14 shadow-2xl px-2 border-b-gray-300/50">
+            <tr
+              className="border-b h-10 sticky text-gray-700 dark:text-gray-200 bg-gray-50
+             dark:bg-gray-700 top-14 shadow-2xl px-2 border-b-gray-300/50"
+            >
               <th className="text-sm text-center  w-[15%]">Avatar</th>
               <th className="text-center text-sm w-[35%]">Name</th>
               <th className="text-center text-sm w-[30%]">Email</th>
@@ -109,11 +112,15 @@ const Users = () => {
           </thead>
           <tbody className="">
             {users.map((user) => (
-              <tr className="h-14 shadow-2xl" key={user._id}>
+              <tr
+                className="h-14 shadow-2xl cursor-pointer hover:underline"
+                key={user._id}
+                onClick={() => location.replace(`/user/${user._id}`)}
+              >
                 <td className="w-[15%] p-2 text-center">
                   {user.avatar ? (
                     <img
-                      className="w-10 object-cover rounded-full ring aspect-square"
+                      className="w-10 object-cover rounded-full dark:ring-gray-500 ring aspect-square"
                       src={user.avatar}
                       alt="avatar"
                     />
@@ -121,10 +128,10 @@ const Users = () => {
                     <FaCircleUser className="text-[40px] " />
                   )}
                 </td>
-                <td className="text-center w-[35%] text-gray-600 font-bold ">
+                <td className="text-center w-[35%] text-gray-600 dark:text-gray-200 font-bold ">
                   {user.name}
                 </td>
-                <td className="text-xs w-[30%] text-center text-gray-500 normal-case">
+                <td className="text-xs w-[30%] text-center text-gray-500 dark:text-gray-100 normal-case">
                   {user.email}
                 </td>
                 <td className="text-center w-[20%] text-red-400 ">
@@ -140,13 +147,19 @@ const Users = () => {
                     ) : (
                       <button
                         className="cursor-pointer"
-                        onClick={() => handleDeleteUser(user._id)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteUser(user._id);
+                        }}
                       >
                         <IoTrash />
                       </button>
                     )
                   ) : (
-                    <MdAdminPanelSettings className="mx-auto cursor-pointer" />
+                    <MdAdminPanelSettings
+                      className="mx-auto cursor-pointer"
+                      onClick={(e) => e.stopPropagation()}
+                    />
                   )}
                 </td>
               </tr>

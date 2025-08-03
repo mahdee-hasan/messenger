@@ -3,10 +3,42 @@ import React, { useState, useEffect } from "react";
 import { Navigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { IoPersonCircle } from "react-icons/io5";
+import {
+  FaEnvelope,
+  FaUserEdit,
+  FaRegComment,
+  FaHeart,
+  FaCamera,
+  FaPlus,
+  FaRegHeart,
+  FaComment,
+  FaShareAlt,
+} from "react-icons/fa";
 import useChatStore from "../stores/chatStore";
-
+import { FaX } from "react-icons/fa6";
+import timeAgo from "../hooks/timeAgo";
+import getPrivacyIcon from "../hooks/getPrivacyIcons";
+import { io } from "socket.io-client";
+import doLike from "../hooks/doLike";
+import undoLike from "../hooks/undoLike";
+const socket = io(import.meta.env.VITE_API_URL, {
+  withCredentials: true,
+});
 const UserInfo = () => {
-  //use useState for state lifting
+  //for avatar
+  const [avatarPreview, setAvatarPreview] = useState(null);
+  const [uploadedAvatar, setUploadedAvatar] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  //for cover
+  const [coverPreview, setCoverPreview] = useState(null);
+  const [coverSrc, setCoverSrc] = useState("");
+  const [uploadedCover, setUploadedCover] = useState(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+  // for post
+  const [posts, setPosts] = useState([]);
+  const [likedPostIds, setLikedPostIds] = useState([]);
+
+  const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState({});
   const [error, setError] = useState(false);
@@ -14,16 +46,68 @@ const UserInfo = () => {
   const { userId } = useParams();
 
   const setMsg = useChatStore((s) => s.setPopUpMessage);
+  const setGlobal = useChatStore((s) => s.setIsOpenGlobal);
 
-  //useEffect for fetching the user data
   useEffect(() => {
     fetchData();
-    if (localStorage.getItem("userId") === null || undefined) {
-      //return to login if user is not logged in
+    fetchPost();
+    setGlobal(false);
+    if (!localStorage.getItem("userId")) {
       location.replace("/login");
     }
   }, []);
-  //async func for send api request by fetch-api
+
+  useEffect(() => {
+    if (!posts || !userId) return;
+
+    const likedPost = posts.filter((post) => post.likes.includes(userId));
+    const likedIds = likedPost.map((post) => post._id);
+    setLikedPostIds(likedIds);
+  }, [posts, userId]);
+
+  // for do like socket
+  useEffect(() => {
+    const handleLike = (data) => {
+      const { postId, userId } = data;
+
+      setLikedPostIds((prev) => [...prev, postId]);
+
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId
+            ? { ...post, likes: [...post.likes, userId] }
+            : post
+        )
+      );
+    };
+
+    socket.on("like", handleLike);
+    return () => {
+      socket.off("like", handleLike);
+    };
+  }, []);
+
+  //for undo like socket
+  useEffect(() => {
+    const handleUndoLike = ({ postId, userId }) => {
+      setLikedPostIds((prev) => prev.filter((id) => id !== postId));
+      setPosts((prevPosts) =>
+        prevPosts.map((post) =>
+          post._id === postId
+            ? {
+                ...post,
+                likes: post.likes.filter((id) => id !== userId),
+              }
+            : post
+        )
+      );
+    };
+
+    socket.on("undo-like", handleUndoLike);
+    return () => {
+      socket.off("undo-like", handleUndoLike);
+    };
+  }, []);
   const fetchData = async () => {
     try {
       const res = await fetch(
@@ -32,109 +116,386 @@ const UserInfo = () => {
           credentials: "include",
         }
       );
-      //take action by given response
       if (!res.ok) throw new Error("User not found");
       const data = await res.json();
-      // set the given response data as user
       setUser(data);
-      setMsg(`welcome ${data.name}`);
+      setCoverSrc(data?.cover?.[0]?.src);
     } catch (err) {
-      //take action if error happens
+      setMsg(err.message || "Something went wrong");
+      setError(err.message || "Something went wrong");
+    }
+  };
+  const fetchPost = async () => {
+    try {
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/user/post/${userId}`,
+        {
+          credentials: "include",
+        }
+      );
+      if (!res.ok) throw new Error("User not found");
+      const data = await res.json();
+      setPosts(data);
+    } catch (err) {
       setMsg(err.message || "Something went wrong");
       setError(err.message || "Something went wrong");
     } finally {
-      //shut off the loader
       setIsLoading(false);
     }
   };
+  const handleCoverInput = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadedCover(file);
+    setCoverPreview(URL.createObjectURL(file));
+  };
 
-  //async function for logging out
+  const handleCoverUpload = async () => {
+    setCoverUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("cover", uploadedCover);
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/user/cover`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) throw new Error("Error uploading cover");
+
+      const data = await res.json();
+      setCoverSrc(data?.cover?.[0]?.src);
+      setUser(data);
+      setMsg("cover changed successfully");
+    } catch (error) {
+      setMsg(error.message);
+    } finally {
+      setCoverUploading(false);
+      setCoverPreview(null);
+      setUploadedCover(null);
+    }
+  };
+
+  const handleAvatarInput = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploadedAvatar(file);
+    setAvatarPreview(URL.createObjectURL(file));
+  };
+
+  const handleAvatarUpload = async () => {
+    setAvatarUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", uploadedAvatar);
+
+      const res = await fetch(
+        `${import.meta.env.VITE_API_URL}/api/user/avatar`,
+        {
+          method: "POST",
+          body: formData,
+          credentials: "include",
+        }
+      );
+
+      if (!res.ok) throw new Error("Error uploading avatar");
+
+      const data = await res.json();
+      setUser(data);
+      setMsg("avatar changed successfully");
+    } catch (error) {
+      setMsg(error.message);
+    } finally {
+      setAvatarUploading(false);
+      setAvatarPreview(null);
+      setUploadedAvatar(null);
+    }
+  };
+  const doLikeHandler = async (id) => {
+    await doLike(id);
+  };
+  const undoLikeHandler = async (id) => {
+    await undoLike(id);
+  };
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
-      //send request for log out
       const res = await fetch(`${import.meta.env.VITE_API_URL}/api/login`, {
         method: "DELETE",
         credentials: "include",
       });
-      //take action by given response
       if (!res.ok) throw new Error("Logout failed");
 
-      const data = await res.json();
-      // remove userId from localStorage
+      await res.json();
       localStorage.removeItem("userId");
       setMsg("logout successful");
+      location.replace("/login");
     } catch (error) {
-      //take action if error occurred
       setMsg(error.message || "Something went wrong during logout");
     } finally {
-      //return to login page
-      location.replace("/login");
-      //finally of the loader
       setLoggingOut(false);
     }
   };
 
-  // return only loader while loading or sending request to backend
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen ">
-        <ClipLoader
-          color="white"
-          loading={true}
-          size={100}
-          aria-label="Loading Spinner"
-          data-testid="loader"
-        />
+        <ClipLoader color="white" loading={true} size={100} />
       </div>
     );
   }
+
   if (error) return <div>Error: {error}</div>;
+
   return (
-    <div className="min-h-screen flex items-center justify-center ">
-      <div className=" p-8 rounded-2xl shadow-xl w-full max-w-sm text-center">
-        <h2 className="text-2xl font-semibold  mb-6">User Info</h2>
-
-        {user.avatar ? (
-          <img
-            src={user.avatar}
-            alt="avatar"
-            className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-2 border-blue-500"
-          />
-        ) : (
-          <IoPersonCircle className="text-[96px] mx-auto" />
-        )}
-        {/* serve the information of client */}
-        <p className="mb-2 text-gray-700">
-          <strong>Name:</strong> {user?.name}
-        </p>
-        <p className="mb-2 text-gray-700">
-          <strong>Email:</strong> {user?.email}
-        </p>
-        <p className="mb-2 text-gray-700">
-          <strong>Mobile:</strong> {user?.mobile}
-        </p>
-        <p className="mb-6 text-gray-700">
-          <strong>Role:</strong> {user?.role}
-        </p>
-
-        <button
-          onClick={handleLogout}
-          className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
-        >
-          {/* clip loader  when processing*/}
-          {loggingOut ? (
-            <ClipLoader
-              color="white"
-              loading={true}
-              size={25}
-              aria-label="Loading Spinner"
-              data-testid="loader"
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-white">
+      <div className="relative h-56 max-w-3xl mx-auto">
+        {coverPreview && !coverUploading ? (
+          <>
+            <img
+              src={coverPreview}
+              alt="uploaded-cover"
+              className="w-full h-full object-cover object-center"
             />
+            <div className="absolute right-4 space-y-2 bottom-4 z-40">
+              <span
+                className="flex text-green-400 items-center space-x-2 p-1 px-2 rounded-2xl bg-white cursor-pointer"
+                onClick={handleCoverUpload}
+              >
+                <FaPlus /> <p>upload</p>
+              </span>
+              <span
+                className="flex text-red-400 items-center space-x-2 p-1 px-2 rounded-2xl bg-white cursor-pointer"
+                onClick={() => setCoverPreview(null)}
+              >
+                <FaX /> <p>undo</p>
+              </span>
+            </div>
+          </>
+        ) : coverUploading ? (
+          <div className="flex justify-center items-center w-full h-56">
+            <ClipLoader color="white" loading={true} size={50} />
+          </div>
+        ) : (
+          <img
+            src={coverSrc}
+            onClick={() => {
+              location.replace(`/image-preview?url=${coverSrc}`);
+            }}
+            alt="cover"
+            className="w-full h-full object-cover object-center"
+          />
+        )}
+
+        {!coverPreview && !coverUploading && (
+          <label
+            className={`absolute ${
+              user.cover?.[0]?.src
+                ? "bottom-3 left-3"
+                : "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+            } z-20 flex items-center justify-center cursor-pointer`}
+          >
+            {user.cover?.[0]?.src ? (
+              <FaCamera className="text-gray-400 text-lg" />
+            ) : (
+              <>
+                <p className="text-gray-400">add a cover</p>
+                <FaCamera className="text-gray-400 text-2xl ml-2" />
+              </>
+            )}
+            <input
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleCoverInput}
+            />
+          </label>
+        )}
+
+        <div className="absolute inset-0 bg-black/20" />
+        <div className="absolute bottom-[-4rem] left-16 flex items-center gap-4">
+          <div className="relative">
+            {avatarPreview && !avatarUploading ? (
+              <>
+                <img
+                  src={avatarPreview}
+                  alt="avatar-preview"
+                  className="w-32 h-32 rounded-full bg-gray-50 border-4 border-white dark:border-gray-900 shadow-lg object-cover"
+                />
+                <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-2">
+                  <span
+                    className="p-1 px-2 bg-white text-green-500 text-sm rounded-full cursor-pointer flex items-center gap-1"
+                    onClick={handleAvatarUpload}
+                  >
+                    <FaPlus />
+                  </span>
+                  <span
+                    className="p-1 px-2 bg-white text-red-500 text-sm rounded-full cursor-pointer flex items-center gap-1"
+                    onClick={() => setAvatarPreview(null)}
+                  >
+                    <FaX />
+                  </span>
+                </div>
+              </>
+            ) : avatarUploading ? (
+              <div className="w-32 h-32 flex justify-center items-center bg-white rounded-full border-4 border-white dark:border-gray-900 shadow-lg">
+                <ClipLoader color="black" size={30} />
+              </div>
+            ) : user.avatar ? (
+              <img
+                src={user.avatar}
+                onClick={() => {
+                  location.replace(`/image-preview?url=${user?.avatar}`);
+                }}
+                alt="avatar"
+                className="w-32 h-32 rounded-full bg-gray-50 border-4 border-white dark:border-gray-900 shadow-lg object-cover"
+              />
+            ) : (
+              <IoPersonCircle className="text-[132px] bg-gray-300 rounded-full" />
+            )}
+
+            {!avatarUploading && !avatarPreview && (
+              <label className="absolute bottom-1 right-1 p-1 bg-white rounded-full cursor-pointer shadow-md">
+                <FaCamera className="text-gray-700 text-sm" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleAvatarInput}
+                />
+              </label>
+            )}
+          </div>
+          <div className="mt-10">
+            <h1 className="text-2xl font-bold">{user.name}</h1>
+            <p className="text-sm text-gray-400">{user.email}</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 pt-24 space-y-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <p className="text-sm text-gray-700 dark:text-gray-300 max-w-xl">
+            {user.bio
+              ? user.bio
+              : "Lorem ipsum dolor sit amet consectetur adipisicing elit. Debitis, quisquam!"}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => location.replace("/inbox")}
+              className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2"
+            >
+              <FaEnvelope /> Message
+            </button>
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 flex items-center gap-2"
+            >
+              <FaUserEdit /> Edit
+              {isEditing && <div onClick={handleLogout}>log out</div>}
+            </button>
+          </div>
+        </div>
+
+        {user.stats && (
+          <div className="flex gap-8 text-center border-y dark:border-gray-700 py-4">
+            {Object.entries(user.stats).map(([label, value]) => {
+              const valueNum =
+                typeof value === "number" ? value : value?.length || 0;
+              return (
+                <div key={label} className="flex items-center space-x-1">
+                  <p className="text-lg font-semibold">{valueNum}</p>
+                  <p className="text-xs capitalize text-gray-500 dark:text-gray-400">
+                    {label}
+                  </p>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        <div className="space-y-4">
+          {posts.length ? (
+            posts?.map((post) => (
+              <div
+                key={post._id}
+                className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700"
+              >
+                <div className="flex items-start gap-4">
+                  {post.author?.avatar ? (
+                    <img
+                      src={post.author.avatar}
+                      alt="user"
+                      className="h-[30px] w-[30px] rounded-full ring-1"
+                    />
+                  ) : (
+                    <FaUserCircle className="text-3xl text-indigo-400" />
+                  )}
+                  <div className="flex-1">
+                    <h2 className="font-bold text-indigo-700 hover:text-blue-600 hover:underline">
+                      {post.author?.name}
+                    </h2>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      {timeAgo(post.createdAt)} • {getPrivacyIcon(post.privacy)}
+                    </p>
+                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                      {post.text}
+                    </p>
+                    {post.images.length > 0 &&
+                      post.images.map((image, index) => (
+                        <img
+                          key={index}
+                          className="w-full max-h-96 object-cover"
+                          src={image.url}
+                          alt="posts attachment"
+                        />
+                      ))}
+
+                    <div className="flex items-center justify-between text-sm text-gray-600 mt-2">
+                      <div className="flex items-center gap-4">
+                        <div className="flex items-center cursor-pointer gap-1 font-medium">
+                          {likedPostIds.includes(post._id) ? (
+                            <FaHeart
+                              className="text-red-500"
+                              onClick={() => undoLikeHandler(post._id)}
+                            />
+                          ) : (
+                            <FaRegHeart
+                              className="text-gray-500"
+                              onClick={() => doLikeHandler(post._id)}
+                            />
+                          )}
+                          {post?.likes?.length || 0} Likes
+                        </div>
+
+                        <button
+                          className="flex items-center hover:underline cursor-pointer gap-1 hover:text-indigo-600 transition"
+                          onClick={() =>
+                            location.replace(`/post-details/${post._id}`)
+                          }
+                        >
+                          <FaComment />
+                          View Comments
+                        </button>
+                      </div>
+
+                      <button className="flex items-center gap-1 hover:text-indigo-600 transition">
+                        <FaShareAlt />
+                        Share
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))
           ) : (
-            " Logout"
+            <p className="mx-auto my-auto max-w-30">no posts here</p>
           )}
-        </button>
+        </div>
       </div>
     </div>
   );

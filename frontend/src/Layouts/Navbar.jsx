@@ -39,7 +39,7 @@ const Navbar = ({ data }) => {
       <div
         className={`${
           isOpen ? "hidden" : "flex fixed"
-        }  flex-row z-10 bg-white px-6 
+        }  flex-row z-10 bg-white dark:bg-gray-400 dark:text-white px-6 
           bottom-0 justify-between w-full py-4 uppercase lg:px-80
        items-center`}
       >
@@ -49,7 +49,7 @@ const Navbar = ({ data }) => {
             className={`p-2 px-4 ${
               pathname === `/user-info/${username}`
                 ? "text-blue-600"
-                : "text-gray-600"
+                : "text-gray-600  dark:text-white"
             } 
       nav-bar-component`}
           >
@@ -60,7 +60,9 @@ const Navbar = ({ data }) => {
           <a
             href="/login"
             className={`p-2 px-4 ${
-              pathname === `/login` ? "text-blue-600" : "text-gray-600"
+              pathname === `/login`
+                ? "text-blue-600"
+                : "text-gray-600 dark:text-white"
             } 
         nav-bar-component`}
           >
@@ -73,7 +75,9 @@ const Navbar = ({ data }) => {
             <a
               href="/inbox"
               className={`p-2 px-4 ${
-                pathname === `/inbox` ? "text-blue-600" : "text-gray-600"
+                pathname === `/inbox`
+                  ? "text-blue-600"
+                  : "text-gray-600 dark:text-white"
               } 
           nav-bar-component`}
             >
@@ -86,7 +90,9 @@ const Navbar = ({ data }) => {
                 <a
                   href="/users"
                   className={`p-2 px-4 ${
-                    pathname === `/users` ? "text-blue-600" : "text-gray-600"
+                    pathname === `/users`
+                      ? "text-blue-600"
+                      : "text-gray-600  dark:text-white"
                   } 
          nav-bar-component`}
                 >

@@ -1,26 +1,32 @@
-// internal imports
-import React, { useEffect, useState } from "react";
+import { FaArrowLeft } from "react-icons/fa";
+import { Link } from "react-router-dom";
 
-import PageTitle from "../components/PageTitle";
-
-const NotFound = () => {
-  const [message, setMessage] = useState("");
-  // make a fake request which will be return as not found page
-  useEffect(() => {
-    fetch(`${import.meta.env.VITE_API_URL}/api/notfound`, {
-      credentials: "include",
-    })
-      .then((res) => res.text()) //catch the message and show it
-      .then((data) => setMessage(data));
-  }, []);
+export default function NotFoundPage() {
   return (
-    <>
-      <PageTitle title="notfound" />
-      <div>
-        <p className="text-2xl text-red-300 text-center">{message}</p>
-      </div>
-    </>
-  );
-};
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 text-center">
+      {/* 404 Big Text */}
+      <h1 className="text-9xl font-extrabold text-gray-300 tracking-widest select-none">
+        404
+      </h1>
 
-export default NotFound;
+      {/* Overlay label */}
+      <div className="bg-indigo-600 text-white px-3 py-1 text-sm rounded rotate-12 absolute mt-[-3rem]">
+        Page Not Found
+      </div>
+
+      {/* Message */}
+      <p className="mt-8 text-lg text-gray-600">
+        Sorry, we couldn't find the page you're looking for.
+      </p>
+
+      {/* Home Button */}
+      <Link
+        to="/"
+        className="mt-6 inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg shadow transition"
+      >
+        <FaArrowLeft />
+        Go Back Home
+      </Link>
+    </div>
+  );
+}

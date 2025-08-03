@@ -38,6 +38,21 @@ const peopleSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    cover: { type: Array },
+    stats: {
+      posts: { type: Number, default: 0 },
+      connected: {
+        type: [mongoose.Schema.Types.ObjectId],
+        ref: "people",
+        default: [],
+      },
+    },
+    posts: {
+      type: [mongoose.Types.ObjectId],
+    },
+    bio: {
+      type: String,
+    },
   },
   {
     timestamps: true,

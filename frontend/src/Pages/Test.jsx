@@ -1,3 +1,7 @@
-export default function Test() {
-  return <div>test something</div>;
-}
+import React from "react";
+
+const Test = () => {
+  return <div>Test Something</div>;
+};
+
+export default Test;

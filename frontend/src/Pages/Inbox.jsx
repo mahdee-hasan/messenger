@@ -4,7 +4,6 @@ import "react-loading-skeleton/dist/skeleton.css";
 import Skeleton from "react-loading-skeleton";
 import { IoPersonCircle, IoSearch } from "react-icons/io5";
 import { io } from "socket.io-client";
-import { FiEdit } from "react-icons/fi";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 
@@ -44,7 +43,7 @@ const Inbox = () => {
     closeAllCon();
   }, []);
   useEffect(() => {
-    if (selectedConversation?.participant_1?.name === user?.name) {
+    if (selectedConversation?.participant_1?.id === user?._id) {
       setUnseenCount(selectedConversation?.participant_2?.unseenCount);
     } else {
       setUnseenCount(selectedConversation?.participant_1?.unseenCount);
@@ -127,8 +126,8 @@ const Inbox = () => {
   }, [conversations]);
 
   useEffect(() => {
-    const handleTypingStarted = ({ conversationId, username }) => {
-      if (username !== user.name) {
+    const handleTypingStarted = ({ conversationId, userId }) => {
+      if (userId !== user._id) {
         setIsTyping((prev) =>
           prev.includes(conversationId) ? prev : [...prev, conversationId]
         );
@@ -139,7 +138,7 @@ const Inbox = () => {
     return () => {
       socket.off("typing-started", handleTypingStarted);
     };
-  }, [user.name]);
+  }, [user._id]);
 
   useEffect(() => {
     const handleTypingStopped = ({ conversationId }) => {
@@ -209,7 +208,7 @@ const Inbox = () => {
       const feedback = await res.json();
       handleOpenChat(feedback.con._id);
     } catch (error) {
-      alert(error.message);
+      setMsg(error.message);
     } finally {
       setIsLoading(false);
     }
@@ -270,36 +269,25 @@ const Inbox = () => {
   }
 
   return (
-    <>
-      <div
-        className={`h-18 flex items-center border-b border-gray-300/50 justify-around ${
-          isOpen && isSearchModalOpen ? "hidden" : "flex"
-        }`}
-      >
-        <p className="text-2xl text-blue-700 uppercase font-extrabold">
-          chat-app
-        </p>
-        <FiEdit
-          onClick={() => setIsSearchModalOpen(true)}
-          className="text-3xl text-gray-600 cursor-pointer p-1 hover:scale-110 transition"
-        />
-      </div>
-
-      <div
-        className={`${
-          isOpen ? "hidden" : "flex"
-        } justify-center items-center h-14`}
-      >
-        <button
-          onClick={() => setIsSearchModalOpen(true)}
-          className="flex text-gray-500 space-x-4 items-center cursor-text justify-start w-[90%] bg-gray-300 p-1 px-3 rounded-2xl"
+    <div className=" max-w-3xl mx-auto md:max-h-[80vh] ">
+      {!isSearchModalOpen && !isOpen && (
+        <div
+          className={`${
+            isOpen ? "hidden" : "flex"
+          } justify-center items-center h-14`}
         >
-          <IoSearch />
-          <p>search</p>
-        </button>
-      </div>
+          <button
+            onClick={() => setIsSearchModalOpen(true)}
+            className="flex text-gray-500 space-x-4 items-center cursor-text 
+            justify-start w-[90%] bg-gray-300 p-1 px-3 rounded-2xl"
+          >
+            <IoSearch />
+            <p>search</p>
+          </button>
+        </div>
+      )}
 
-      {!isSearchModalOpen && (
+      {!isSearchModalOpen && !isOpen && (
         <div
           className={`${
             isOpen && isSearchModalOpen ? "hidden" : "flex"
@@ -351,8 +339,8 @@ const Inbox = () => {
                     </span>
                   </div>
                 ) : (
-                  <div className="absolute text-[7px] h-[12px] w-[12px] bg-white ring-[0.5px] text-black rounded-full right-1 ring-green-400 bottom-4">
-                    <p className="justify-self-center my-auto text-shadow-2xs">
+                  <div className="absolute text-[7px] max-w-12 bg-white ring-[0.5px] text-black rounded-full right-1 ring-green-400 bottom-4">
+                    <p className="justify-self-center truncate my-auto text-shadow-2xs">
                       {timeAgo(u.updatedAt)}
                     </p>
                   </div>
@@ -365,101 +353,106 @@ const Inbox = () => {
 
       <PageTitle title="Inbox - Chat Application" />
 
-      <div className="flex normal-case justify-center md:mt-5 w-full">
-        <div className="flex justify-center rounded-2xl w-full md:w-[90%]">
+      <div className="flex normal-case  md:mt-5 w-full">
+        <div className="flex justify-between rounded-2xl w-full ">
           <div
             className={`${
-              isOpen ? "hidden md:flex md:flex-[1]" : "w-full flex md:flex-[1]"
+              isOpen ? "hidden md:flex" : "w-full flex "
             } relative h-[90vh] md:h-[440px] flex-col items-center`}
           >
-            <div className="flex flex-col scrollbar-hide overflow-y-auto w-full px-2 py-1">
-              {conversations.length > 0
-                ? conversations.map((conversation) => {
-                    const participant = getParticipant(conversation);
-                    return (
-                      <div
-                        key={conversation._id}
-                        onClick={() => {
-                          if (selectedConversation) {
-                            handleCloseChat(selectedConversation._id);
-                          }
-                          handleOpenChat(conversation._id);
-                        }}
-                        className={`flex relative cursor-pointer hover:bg-gray-100 rounded mx-1 w-full space-x-4 px-3 items-center py-2 transition ${
-                          selectedConversation._id === conversation._id
-                            ? "bg-gray-50"
-                            : ""
-                        }`}
-                      >
-                        <div className="relative">
-                          {participant.avatar ? (
-                            <img
-                              src={participant.avatar}
-                              className="h-10 w-10 ring rounded-full object-cover"
-                              alt="user"
-                            />
-                          ) : (
-                            <IoPersonCircle className="text-[36px] rounded-full ring" />
-                          )}
-                          {activeIds.includes(participant.id) && (
-                            <div className="absolute right-0 bottom-0">
-                              <span className="relative flex size-3">
-                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-green-500 opacity-75"></span>
-                                <span className="relative inline-flex size-3 rounded-full bg-green-600"></span>
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="font-bold text-gray-700 truncate">
-                            {participant.name}
-                          </p>
-                          <p
-                            className={`text-sm truncate max-w-50 italic
+            <div className="flex flex-col min-w-65 truncate scrollbar-hide overflow-y-auto w-full px-2 py-1">
+              {conversations.length && !isLoading > 0 ? (
+                conversations.map((conversation) => {
+                  const participant = getParticipant(conversation);
+                  return (
+                    <div
+                      key={conversation._id}
+                      onClick={() => {
+                        handleOpenChat(conversation._id);
+                      }}
+                      className={`flex relative cursor-pointer hover:bg-gray-100 rounded
+                           mx-1 w-full space-x-4 px-3 items-center py-2 transition ${
+                             selectedConversation._id === conversation._id
+                               ? "bg-gray-50"
+                               : ""
+                           }`}
+                    >
+                      <div className="relative">
+                        {participant.avatar ? (
+                          <img
+                            src={participant.avatar}
+                            className="h-10 w-10 ring rounded-full object-cover"
+                            alt="user"
+                          />
+                        ) : (
+                          <IoPersonCircle className="text-[36px] rounded-full ring" />
+                        )}
+                        {activeIds.includes(participant.id) && (
+                          <div className="absolute right-0 bottom-0">
+                            <span className="relative flex size-3">
+                              <span
+                                className="absolute inline-flex h-full w-full animate-ping
+                                 rounded-full bg-green-500 opacity-75"
+                              ></span>
+                              <span className="relative inline-flex size-3 rounded-full bg-green-600"></span>
+                            </span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-bold text-gray-700 truncate">
+                          {participant.name}
+                        </p>
+                        <p
+                          className={`text-sm truncate max-w-40 italic
                             ${
                               getUnread(conversation) > 0
                                 ? "font-bold text-black"
                                 : "text-gray-500 font-medium"
                             }`}
-                          >
-                            {isTyping.includes(conversation._id) ? (
-                              <span className="text-sm">Typing...</span>
-                            ) : (
-                              <span className="text-sm">
-                                {conversation?.lastMessage.sender ===
-                                participant.name
-                                  ? conversation?.lastMessage.text
-                                  : `You: ${
-                                      conversation?.lastMessage.text ||
-                                      "sent an attachment"
-                                    }`}
-                              </span>
-                            )}
-                          </p>
-                        </div>
-                        {getUnread(conversation) > 0 && (
-                          <div className="absolute right-10 bottom-1/2">
-                            <span className="relative flex size-3">
-                              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
-                              <span className="relative inline-flex size-3 rounded-full bg-red-600 "></span>
+                        >
+                          {isTyping.includes(conversation._id) ? (
+                            <span className="text-sm">Typing...</span>
+                          ) : (
+                            <span className="text-sm">
+                              {conversation?.lastMessage.sender ===
+                              participant.name
+                                ? conversation?.lastMessage.text
+                                : `You: ${
+                                    conversation?.lastMessage.text ||
+                                    "sent an attachment"
+                                  }`}
                             </span>
-                          </div>
-                        )}
+                          )}
+                        </p>
                       </div>
-                    );
-                  })
-                : [...Array(6)].map((_, i) => (
-                    <div
-                      key={i}
-                      className="flex items-center space-x-4 px-3 py-2 w-full"
-                    >
-                      <Skeleton circle width={36} height={36} />
-                      <div className="flex-1">
-                        <Skeleton height={16} width="60%" />
-                        <Skeleton height={12} width="40%" />
-                      </div>
+                      {getUnread(conversation) > 0 && (
+                        <div className="absolute right-10 bottom-1/2">
+                          <span className="relative flex size-3">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75"></span>
+                            <span className="relative inline-flex size-3 rounded-full bg-red-600 "></span>
+                          </span>
+                        </div>
+                      )}
                     </div>
-                  ))}
+                  );
+                })
+              ) : isLoading ? (
+                [...Array(6)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="flex items-center space-x-4 px-3 py-2 w-full"
+                  >
+                    <Skeleton circle width={36} height={36} />
+                    <div className="flex-1">
+                      <Skeleton height={16} width="60%" />
+                      <Skeleton height={12} width="40%" />
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="mx-auto max-w-30">no conversations</p>
+              )}
             </div>
           </div>
 
@@ -481,7 +474,7 @@ const Inbox = () => {
           />
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

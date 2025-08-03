@@ -18,10 +18,18 @@ import AddUser from "./Pages/AddUser";
 import Test from "./Pages/Test";
 import useChatStore from "./stores/chatStore";
 import PopUp from "./components/PopUp";
+import Feed from "./Pages/Feed";
+import DarkMode from "./components/DarkMode";
+import AddPost from "./Pages/AddPost";
+import MainNav from "./Layouts/MainNav";
+import User from "./Pages/user";
+import NoInternetBanner from "./components/NoInternetBanner";
+import PostDetails from "./Pages/PostDetails";
+import ImagePreview from "./Pages/ImagePreview";
 
 const App = () => {
   const [showMessage, setShowMessage] = useState(false);
-  //get users name from localstorage
+  //get users id from localstorage
   const data = JSON.parse(localStorage.getItem("userId"));
   //set pop up message for show
   const PopUpMsg = useChatStore((s) => s.popUpMessage);
@@ -98,19 +106,25 @@ const App = () => {
     //wrap the whole app with browser router for routes
     <BrowserRouter>
       {/* Navbar on the top and pass user data into it */}
-      <Navbar data={situation} />
+      <MainNav data={situation} />
+      <NoInternetBanner />
+      {/* <DarkMode /> */}
       {showMessage && <PopUp message={PopUpMsg} />}
 
       {/* if user logged in then serve these route */}
       {situation.isLoggedIn && situation.userData && !situation.error ? (
         <Routes>
-          <Route path="/" element={<Home data={situation.userData} />} />
           <Route path="/login" element={<Login data={situation} />} />
           <Route path="/user-info/:userId" element={<UserInfo />} />
+          <Route path="/post-details/:postId" element={<PostDetails />} />
+          <Route path="/image-preview" element={<ImagePreview />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/modal" element={<Example />} />
           <Route path="*" element={<NotFound />} />
           <Route path="/test" element={<Test />} />
+          <Route path="/" element={<Feed />} />
+          <Route path="/user/:userId" element={<User />} />
+          <Route path="/add-post" element={<AddPost />} />
           {situation.userData.role === "admin" && (
             <>
               {" "}

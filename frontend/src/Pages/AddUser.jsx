@@ -99,9 +99,12 @@ const AddUser = () => {
     <>
       {" "}
       <PageTitle title="add-user" />
-      <div className="rounded max-h-[100vh] p-10 overflow-scroll scrollbar-hide bg-gray-100 ">
+      <div
+        className="rounded max-h-[100vh] max-w-3xl mx-auto p-10 overflow-scroll 
+      scrollbar-hide bg-gray-100 dark:bg-gray-700"
+      >
         {" "}
-        <p className="text-center mt-2 text-2xl text-black font-bold ">
+        <p className="text-center mt-2 text-2xl text-black dark:text-white font-bold ">
           users information
         </p>
         <form
@@ -112,7 +115,7 @@ const AddUser = () => {
           {" "}
           <label
             htmlFor="name"
-            className="text-sm text-gray-600 tracking-wider normal-case"
+            className="text-sm text-gray-600 dark:text-gray-200 tracking-wider normal-case"
           >
             {" "}
             enter name:{" "}
@@ -123,7 +126,7 @@ const AddUser = () => {
             placeholder="adam"
             value={formData.name}
             onChange={handleChange}
-            className={`outline-none bg-gray-200 focus:bg-white p-2 rounded my-1 ${
+            className={`outline-none bg-gray-200 focus:bg-white dark:bg-gray-500 dark:focus:bg-gray-300 p-2 rounded my-1 ${
               errors.name ? "border border-red-500" : ""
             }`}
           />
@@ -132,7 +135,7 @@ const AddUser = () => {
           )}
           <label
             htmlFor="email"
-            className="mt-5 text-sm text-gray-600 tracking-wider normal-case"
+            className="mt-5 text-sm text-gray-600 dark:text-gray-200 tracking-wider normal-case"
           >
             enter email:
           </label>
@@ -142,7 +145,7 @@ const AddUser = () => {
             placeholder="name@company.com"
             value={formData.email}
             onChange={handleChange}
-            className={`outline-none bg-gray-200 focus:bg-white p-2 rounded my-1 ${
+            className={`outline-none bg-gray-200 focus:bg-white dark:bg-gray-500 dark:focus:bg-gray-300 p-2 rounded my-1 ${
               errors.email ? "border border-red-500" : ""
             }`}
           />
@@ -151,7 +154,7 @@ const AddUser = () => {
           )}
           <label
             htmlFor="mobile"
-            className="mt-5 text-sm text-gray-600 tracking-wider normal-case"
+            className="mt-5 text-sm text-gray-600 dark:text-gray-200 tracking-wider normal-case"
           >
             enter mobile no:
           </label>
@@ -161,7 +164,7 @@ const AddUser = () => {
             placeholder="+8801**********"
             value={formData.mobile}
             onChange={handleChange}
-            className={`outline-none bg-gray-200 focus:bg-white p-2 rounded my-1 ${
+            className={`outline-none bg-gray-200 focus:bg-white dark:bg-gray-500 dark:focus:bg-gray-300 p-2 rounded my-1 ${
               errors.mobile ? "border border-red-500" : ""
             }`}
           />
@@ -170,7 +173,7 @@ const AddUser = () => {
           )}
           <label
             htmlFor="password"
-            className="mt-5 text-sm text-gray-600 relative tracking-wider normal-case"
+            className="mt-5 text-sm text-gray-600 dark:text-gray-200 relative tracking-wider normal-case"
           >
             {" "}
             enter password:
@@ -180,7 +183,7 @@ const AddUser = () => {
               placeholder="must use both case,number, and symbol "
               value={formData.password}
               onChange={handleChange}
-              className={`outline-none w-full bg-gray-200 focus:bg-white p-2 rounded my-1 ${
+              className={`outline-none w-full bg-gray-200 focus:bg-white dark:bg-gray-500 dark:focus:bg-gray-300 p-2 rounded my-1 ${
                 errors.password ? "border border-red-500" : ""
               }`}
             />
@@ -211,8 +214,8 @@ const AddUser = () => {
           )}
           <div className="mt-5 space-x-3">
             {" "}
-            <p className="inline text-gray-600"> role:</p>
-            <label className="text-sm text-gray-600 normal-case">
+            <p className="inline text-gray-600 dark:text-gray-200"> role:</p>
+            <label className="text-sm text-gray-600 dark:text-gray-200 normal-case">
               <input
                 className="h-2 w-2"
                 onChange={handleRole}
@@ -222,7 +225,7 @@ const AddUser = () => {
               />{" "}
               user{" "}
             </label>
-            <label className="text-sm text-gray-600 normal-case">
+            <label className="text-sm text-gray-600 dark:text-gray-200 normal-case">
               {" "}
               <input
                 className="h-2 w-2 ml-3"
@@ -234,10 +237,12 @@ const AddUser = () => {
               admin{" "}
             </label>
           </div>
-          <p className="mt-5 text-gray-600 text-sm">avatar:</p>
+          <p className="mt-5 text-gray-600 dark:text-gray-200 text-sm">
+            avatar:
+          </p>
           <label
             htmlFor="avatar"
-            className={` bg-gray-200 mx-auto my-0 focus:bg-white rounded  cursor-pointer ${
+            className={` bg-gray-200 mx-auto my-0 focus:bg-white  dark:bg-gray-500 dark:focus:bg-gray-300 rounded  cursor-pointer ${
               errors.avatar ? "border border-red-500" : ""
             }`}
           >
