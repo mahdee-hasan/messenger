@@ -9,6 +9,7 @@ import {
   FaCommentSlash,
   FaCommentDots,
 } from "react-icons/fa";
+import { useNavigate } from "react-router";
 import { ClipLoader } from "react-spinners";
 
 const privacyOptions = [
@@ -26,6 +27,7 @@ export default function AddPost() {
   const [showPrivacyMenu, setShowPrivacyMenu] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
+  const navigate = useNavigate();
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     files.forEach((file) => {
@@ -73,7 +75,7 @@ export default function AddPost() {
       console.log(error.message);
     } finally {
       setIsLoading(false);
-      location.replace("/");
+      navigate("/");
     }
   };
 

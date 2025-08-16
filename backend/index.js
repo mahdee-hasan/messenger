@@ -89,7 +89,7 @@ io.on("connection", async (socket) => {
       if (userId) {
         socket.userId = userId;
         socket.username = username;
-        await people.updateOne({ _id: userId }, { $set: { active: true } });
+        await people.findByIdAndUpdate(userId, { $set: { active: true } });
       }
     } catch (err) {
       console.error("Token decode error:", err);

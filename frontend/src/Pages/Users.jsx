@@ -9,6 +9,7 @@ import { FaCircleUser } from "react-icons/fa6";
 
 import PageTitle from "../components/PageTitle";
 import useChatStore from "../stores/chatStore";
+import { useNavigate } from "react-router";
 
 const Users = () => {
   //useStates
@@ -16,6 +17,7 @@ const Users = () => {
   const [users, setUsers] = useState([]);
   const [deleting, setDeleting] = useState(null);
 
+  const navigate = useNavigate();
   //useEffect for load users
   useEffect(() => {
     loadUser();
@@ -91,7 +93,7 @@ const Users = () => {
       </p>
       <div className=" sticky z-40 border-b border-gray-400/50 bg-gray-100 dark:bg-gray-600 top-0">
         <button
-          onClick={() => location.replace("/add-user")}
+          onClick={() => navigate("/add-user")}
           className="hover:bg-gray-100 dark:hover:bg-gray-500 cursor-pointer flex justify-center w-full items-center h-14"
         >
           <IoAddCircleSharp className="text-2xl" />
@@ -115,7 +117,7 @@ const Users = () => {
               <tr
                 className="h-14 shadow-2xl cursor-pointer hover:underline"
                 key={user._id}
-                onClick={() => location.replace(`/user/${user._id}`)}
+                onClick={() => navigate(`/user/${user._id}`)}
               >
                 <td className="w-[15%] p-2 text-center">
                   {user.avatar ? (

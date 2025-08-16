@@ -1,14 +1,14 @@
-const doLike = async (postId) => {
+const doCommentLike = async (id) => {
   try {
     const res = await fetch(
-      `${import.meta.env.VITE_API_URL}/api/feeds/likes?postId=${postId}`,
+      `${import.meta.env.VITE_API_URL}/api/feeds/commentLikes?commentId=${id}`,
       {
         method: "GET",
         credentials: "include",
       }
     );
     if (!res.ok) {
-      throw new Error("error liking the post");
+      throw new Error("error liking the comment");
     }
     const data = await res.json();
     return data;
@@ -16,4 +16,5 @@ const doLike = async (postId) => {
     return { success: false, error: error.message };
   }
 };
-export default doLike;
+
+export default doCommentLike;

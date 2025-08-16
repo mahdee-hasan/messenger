@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const commentSchema = mongoose.Schema(
   {
     post_id: {
-      type: mongoose.Types.ObjectId,
+      type: mongoose.Schema.Types.ObjectId,
       ref: "post",
       required: true,
     },
@@ -18,7 +18,7 @@ const commentSchema = mongoose.Schema(
       type: Array,
     },
     author: {
-      id: mongoose.Types.ObjectId,
+      id: mongoose.Schema.Types.ObjectId,
       name: String,
       avatar: String,
     },
@@ -28,12 +28,17 @@ const commentSchema = mongoose.Schema(
       default: [],
     },
     isReply: {
-      type: Boolean,
-      required: true,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "comment",
     },
     likes: {
-      type: [mongoose.Types.ObjectId],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "people",
       default: [],
+    },
+    edited: {
+      type: Boolean,
+      default: false,
     },
   },
   {

@@ -3,7 +3,6 @@ whats undone even now ,
 - connection system
 - notification
 - responsiveness
-- comments replies
 - post sharing
 - mentioning
 - editing profile

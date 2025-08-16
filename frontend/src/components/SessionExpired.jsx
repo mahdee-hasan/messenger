@@ -14,15 +14,9 @@ const SessionExpired = ({ data }) => {
     }
   }, [data]);
   return (
-    <div className="flex h-[90vh]">
-      <img
-        src={picture}
-        alt="img"
-        className="fixed left-0 bottom-0 -z-10 h-[70vh]"
-      />
-
+    <div className="flex max-w-2xl mx-auto h-[90vh]">
       <div
-        className="text-gray-900 fixed right-56 top-44 h-40 justify-between flex
+        className="text-gray-900  h-40 justify-between flex
        flex-col  lowercase tracking-widest"
       >
         <p>

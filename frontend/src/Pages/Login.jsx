@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { ClipLoader } from "react-spinners";
 import useChatStore from "../stores/chatStore";
+import { useNavigate } from "react-router";
 
 // external imports
 // ..
@@ -19,12 +20,12 @@ const Login = ({ data }) => {
   const [showPassword, setShowPassword] = useState(false);
 
   const setMsg = useChatStore((s) => s.setPopUpMessage);
-
+  const navigate = useNavigate();
   //replace the location to user-info if user is logged in
   useEffect(() => {
     if (data?.isLoggedIn) {
       location.replace(
-        `/user-info/${JSON.parse(localStorage.getItem("userId")).value}`
+        `/user-info/${JSON.parse(localStorage.getItem("userId"))?.value}`
       );
     }
   }, []);

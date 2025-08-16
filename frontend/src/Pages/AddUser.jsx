@@ -10,10 +10,11 @@ import {
   IoSwapHorizontal,
 } from "react-icons/io5";
 import { ClipLoader } from "react-spinners";
-
+import { useNavigate } from "react-router";
 // external imports
 import PageTitle from "../components/PageTitle";
 import useChatStore from "../stores/chatStore";
+
 const AddUser = () => {
   //useStates
   const [isLoading, setIsLoading] = useState(false);
@@ -30,7 +31,7 @@ const AddUser = () => {
   });
   //toast
   const setMsg = useChatStore((s) => s.setPopUpMessage);
-
+  const navigate = useNavigate();
   //handle input changes
   const handleChange = (e) => {
     //there is file than fill the avatar
@@ -84,7 +85,7 @@ const AddUser = () => {
         //if there is no error go back to user page
         setErrors({});
         setMsg("successfully created");
-        location.replace("/users");
+        navigate("/users");
       }
     } catch (error) {
       setMsg("Error submitting form:", error.message);
@@ -292,7 +293,7 @@ const AddUser = () => {
               type="button"
               className="bg-red-300 rounded ring-gray-500 flex items-center gap-2 p-2
              px-6 hover:bg-red-200 ring ring-offset-0 capitalize"
-              onClick={() => location.replace("/users")}
+              onClick={() => navigate("/users")}
             >
               <IoPersonRemoveSharp />
               Cancel

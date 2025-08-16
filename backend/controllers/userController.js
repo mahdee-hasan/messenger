@@ -1,6 +1,9 @@
 const cloudinary = require("../cloudinaryConfig");
 const people = require("../models/people");
 const post = require("../models/post");
+const conversation = require("../models/conversation");
+const message = require("../models/message");
+const mongoose = require("mongoose");
 
 const setCover = async (req, res, next) => {
   try {
@@ -40,10 +43,34 @@ const setAvatar = async (req, res, next) => {
         throw new Error("Error deleting previous cover from Cloudinary");
       }
     }
-    await post.updateMany(
-      { "author.id": req.user.userId },
-      { $set: { "author.avatar": req.avatarName } }
-    );
+
+    await Promise.all([
+      message.updateMany(
+        { "sender.id": new mongoose.Types.ObjectId(req.user.userId) },
+        { $set: { "sender.avatar": req.avatarName } }
+      ),
+
+      message.updateMany(
+        { "receiver.id": new mongoose.Types.ObjectId(req.user.userId) },
+        { $set: { "receiver.avatar": req.avatarName } }
+      ),
+
+      conversation.updateMany(
+        { "participant_1.id": new mongoose.Types.ObjectId(req.user.userId) },
+        { $set: { "participant_1.avatar": req.avatarName } }
+      ),
+
+      conversation.updateMany(
+        { "participant_2.id": new mongoose.Types.ObjectId(req.user.userId) },
+        { $set: { "participant_2.avatar": req.avatarName } }
+      ),
+
+      post.updateMany(
+        { "author.id": new mongoose.Types.ObjectId(req.user.userId) },
+        { $set: { "author.avatar": req.avatarName } }
+      ),
+    ]);
+
     const user = await people.findByIdAndUpdate(
       req.user.userId,
       { avatar: req.avatarName, public_id: req.public_id },

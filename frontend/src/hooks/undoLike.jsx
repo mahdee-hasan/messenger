@@ -1,6 +1,6 @@
 const undoLike = async (postId) => {
   try {
-    const res = fetch(
+    const res = await fetch(
       `${import.meta.env.VITE_API_URL}/api/feeds/undo-likes?postId=${postId}`,
       {
         method: "GET",

@@ -24,6 +24,7 @@ import User from "./Pages/User";
 import NoInternetBanner from "./components/NoInternetBanner";
 import PostDetails from "./Pages/PostDetails";
 import ImagePreview from "./Pages/ImagePreview";
+import EditPost from "./Pages/EditPost";
 
 const App = () => {
   const [showMessage, setShowMessage] = useState(false);
@@ -114,7 +115,14 @@ const App = () => {
         <Routes>
           <Route path="/login" element={<Login data={situation} />} />
           <Route path="/user-info/:userId" element={<UserInfo />} />
-          <Route path="/post-details/:postId" element={<PostDetails />} />
+          <Route
+            path="/post-details/:postId"
+            element={<PostDetails data={situation.userData} />}
+          />
+          <Route
+            path="/edit-post/:postId"
+            element={<EditPost data={situation.userData} />}
+          />
           <Route path="/image-preview" element={<ImagePreview />} />
           <Route path="/inbox" element={<Inbox />} />
           <Route path="/modal" element={<Example />} />

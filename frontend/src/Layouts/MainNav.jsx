@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+
 import {
   FaFacebookMessenger,
   FaNewspaper,
@@ -6,10 +7,11 @@ import {
   FaUser,
   FaUsers,
 } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import useChatStore from "../stores/chatStore";
 
 const MainNav = ({ data }) => {
+  const navigate = useNavigate();
   const isAdmin = data?.userData?.role === "admin";
   const userId = data?.userData?._id;
   const navItems = [
@@ -32,7 +34,12 @@ const MainNav = ({ data }) => {
        text-white px-6 py-4 shadow-lg sticky max-w-3xl mx-auto top-0 z-50`}
     >
       <div className="max-w-3xl mx-auto flex justify-between items-center">
-        <h1 className="text-2xl font-bold">SocialBox</h1>
+        <h1
+          className="text-2xl cursor-pointer font-bold"
+          onClick={() => navigate("/")}
+        >
+          SocialBox
+        </h1>
         <div className="flex items-center gap-3">
           {navItems.map((item) => (
             <Link

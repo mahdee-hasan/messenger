@@ -19,12 +19,13 @@ router.get("/", checkLogin, getUsers);
 
 router.post(
   "/",
+  checkLogin,
   avatarUpload,
   addUserValidator,
   addUserValidationHandler,
   cloudinaryUploader,
   addUser
 );
-router.delete("/:id", deleteUser);
+router.delete("/:id", checkLogin, deleteUser);
 
 module.exports = router;

@@ -1,6 +1,6 @@
 //internal imports
 import React, { useState, useEffect } from "react";
-import { Navigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { IoPersonCircle } from "react-icons/io5";
 import {
@@ -21,6 +21,7 @@ import getPrivacyIcon from "../hooks/getPrivacyIcons";
 import { io } from "socket.io-client";
 import doLike from "../hooks/doLike";
 import undoLike from "../hooks/undoLike";
+import Post from "../components/Post";
 const socket = io(import.meta.env.VITE_API_URL, {
   withCredentials: true,
 });
@@ -45,6 +46,7 @@ const UserInfo = () => {
   const [loggingOut, setLoggingOut] = useState(false);
   const { userId } = useParams();
 
+  const navigate = useNavigate();
   const setMsg = useChatStore((s) => s.setPopUpMessage);
   const setGlobal = useChatStore((s) => s.setIsOpenGlobal);
 
@@ -58,6 +60,7 @@ const UserInfo = () => {
   }, []);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
     if (!posts || !userId) return;
 
     const likedPost = posts.filter((post) => post.likes.includes(userId));
@@ -65,49 +68,6 @@ const UserInfo = () => {
     setLikedPostIds(likedIds);
   }, [posts, userId]);
 
-  // for do like socket
-  useEffect(() => {
-    const handleLike = (data) => {
-      const { postId, userId } = data;
-
-      setLikedPostIds((prev) => [...prev, postId]);
-
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? { ...post, likes: [...post.likes, userId] }
-            : post
-        )
-      );
-    };
-
-    socket.on("like", handleLike);
-    return () => {
-      socket.off("like", handleLike);
-    };
-  }, []);
-
-  //for undo like socket
-  useEffect(() => {
-    const handleUndoLike = ({ postId, userId }) => {
-      setLikedPostIds((prev) => prev.filter((id) => id !== postId));
-      setPosts((prevPosts) =>
-        prevPosts.map((post) =>
-          post._id === postId
-            ? {
-                ...post,
-                likes: post.likes.filter((id) => id !== userId),
-              }
-            : post
-        )
-      );
-    };
-
-    socket.on("undo-like", handleUndoLike);
-    return () => {
-      socket.off("undo-like", handleUndoLike);
-    };
-  }, []);
   const fetchData = async () => {
     try {
       const res = await fetch(
@@ -215,12 +175,7 @@ const UserInfo = () => {
       setUploadedAvatar(null);
     }
   };
-  const doLikeHandler = async (id) => {
-    await doLike(id);
-  };
-  const undoLikeHandler = async (id) => {
-    await undoLike(id);
-  };
+
   const handleLogout = async () => {
     setLoggingOut(true);
     try {
@@ -284,7 +239,7 @@ const UserInfo = () => {
           <img
             src={coverSrc}
             onClick={() => {
-              location.replace(`/image-preview?url=${coverSrc}`);
+              navigate(`/image-preview?url=${coverSrc}`);
             }}
             alt="cover"
             className="w-full h-full object-cover object-center"
@@ -349,7 +304,7 @@ const UserInfo = () => {
               <img
                 src={user.avatar}
                 onClick={() => {
-                  location.replace(`/image-preview?url=${user?.avatar}`);
+                  navigate(`/image-preview?url=${user?.avatar}`);
                 }}
                 alt="avatar"
                 className="w-32 h-32 rounded-full bg-gray-50 border-4 border-white dark:border-gray-900 shadow-lg object-cover"
@@ -386,7 +341,7 @@ const UserInfo = () => {
           </p>
           <div className="flex gap-3">
             <button
-              onClick={() => location.replace("/inbox")}
+              onClick={() => navigate("/inbox")}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2"
             >
               <FaEnvelope /> Message
@@ -418,83 +373,22 @@ const UserInfo = () => {
           </div>
         )}
 
-        <div className="space-y-4">
-          {posts.length ? (
-            posts?.map((post) => (
+        <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
+          {posts.length > 0 &&
+            posts.map((post) => (
               <div
                 key={post._id}
-                className="bg-white dark:bg-gray-800 rounded-xl p-5 shadow-sm border border-gray-200 dark:border-gray-700"
+                className="bg-white/90 backdrop-blur-md rounded-2xl shadow-md border border-indigo-100 p-4 space-y-4 hover:shadow-xl transition"
               >
-                <div className="flex items-start gap-4">
-                  {post.author?.avatar ? (
-                    <img
-                      src={post.author.avatar}
-                      alt="user"
-                      className="h-[30px] w-[30px] rounded-full ring-1"
-                    />
-                  ) : (
-                    <FaUserCircle className="text-3xl text-indigo-400" />
-                  )}
-                  <div className="flex-1">
-                    <h2 className="font-bold text-indigo-700 hover:text-blue-600 hover:underline">
-                      {post.author?.name}
-                    </h2>
-                    <p className="text-sm text-gray-500 flex items-center gap-1">
-                      {timeAgo(post.createdAt)} • {getPrivacyIcon(post.privacy)}
-                    </p>
-                    <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
-                      {post.text}
-                    </p>
-                    {post.images.length > 0 &&
-                      post.images.map((image, index) => (
-                        <img
-                          key={index}
-                          className="w-full max-h-96 object-cover"
-                          src={image.url}
-                          alt="posts attachment"
-                        />
-                      ))}
-
-                    <div className="flex items-center justify-between text-sm text-gray-600 mt-2">
-                      <div className="flex items-center gap-4">
-                        <div className="flex items-center cursor-pointer gap-1 font-medium">
-                          {likedPostIds.includes(post._id) ? (
-                            <FaHeart
-                              className="text-red-500"
-                              onClick={() => undoLikeHandler(post._id)}
-                            />
-                          ) : (
-                            <FaRegHeart
-                              className="text-gray-500"
-                              onClick={() => doLikeHandler(post._id)}
-                            />
-                          )}
-                          {post?.likes?.length || 0} Likes
-                        </div>
-
-                        <button
-                          className="flex items-center hover:underline cursor-pointer gap-1 hover:text-indigo-600 transition"
-                          onClick={() =>
-                            location.replace(`/post-details/${post._id}`)
-                          }
-                        >
-                          <FaComment />
-                          View Comments
-                        </button>
-                      </div>
-
-                      <button className="flex items-center gap-1 hover:text-indigo-600 transition">
-                        <FaShareAlt />
-                        Share
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                {/* Header */}
+                <Post
+                  post={post}
+                  likedPostIds={likedPostIds}
+                  setLikedPostIds={setLikedPostIds}
+                  likeCount={post.likes.length}
+                />
               </div>
-            ))
-          ) : (
-            <p className="mx-auto my-auto max-w-30">no posts here</p>
-          )}
+            ))}
         </div>
       </div>
     </div>
