@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { io } from "socket.io-client";
 import { IoPersonCircle } from "react-icons/io5";
 import SingleMessage from "./SingleMessage";
-import useChatStore from "../stores/chatStore";
+import useChatStore from "../../stores/chatStore";
 
 const socket = io(import.meta.env.VITE_API_URL, {
   withCredentials: true,

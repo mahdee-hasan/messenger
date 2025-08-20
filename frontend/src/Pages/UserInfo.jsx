@@ -3,28 +3,12 @@ import React, { useState, useEffect } from "react";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
 import { IoPersonCircle } from "react-icons/io5";
-import {
-  FaEnvelope,
-  FaUserEdit,
-  FaRegComment,
-  FaHeart,
-  FaCamera,
-  FaPlus,
-  FaRegHeart,
-  FaComment,
-  FaShareAlt,
-} from "react-icons/fa";
+import { FaEnvelope, FaUserEdit, FaCamera, FaPlus } from "react-icons/fa";
 import useChatStore from "../stores/chatStore";
 import { FaX } from "react-icons/fa6";
-import timeAgo from "../hooks/timeAgo";
-import getPrivacyIcon from "../hooks/getPrivacyIcons";
-import { io } from "socket.io-client";
-import doLike from "../hooks/doLike";
-import undoLike from "../hooks/undoLike";
-import Post from "../components/Post";
-const socket = io(import.meta.env.VITE_API_URL, {
-  withCredentials: true,
-});
+
+import Post from "../components/post/Post";
+
 const UserInfo = () => {
   //for avatar
   const [avatarPreview, setAvatarPreview] = useState(null);
@@ -356,23 +340,23 @@ const UserInfo = () => {
           </div>
         </div>
 
-        {user.stats && (
-          <div className="flex gap-8 text-center border-y dark:border-gray-700 py-4">
-            {Object.entries(user.stats).map(([label, value]) => {
-              const valueNum =
-                typeof value === "number" ? value : value?.length || 0;
-              return (
-                <div key={label} className="flex items-center space-x-1">
-                  <p className="text-lg font-semibold">{valueNum}</p>
-                  <p className="text-xs capitalize text-gray-500 dark:text-gray-400">
-                    {label}
-                  </p>
-                </div>
-              );
-            })}
-          </div>
-        )}
-
+        <div className="flex gap-8 text-center border-y dark:border-gray-700 py-4">
+          {[
+            { label: "post", value: posts?.length || 0 },
+            { label: "friends", value: user.friends?.length || 0 },
+            {
+              label: "following",
+              value: user.friends?.length + user.friend_requested?.length || 0,
+            },
+          ].map((item, i) => (
+            <div key={i} className="flex items-center space-x-1">
+              <p className="text-lg font-semibold">{item.value}</p>
+              <p className="text-xs capitalize text-gray-500 dark:text-gray-400">
+                {item.label}
+              </p>
+            </div>
+          ))}
+        </div>
         <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
           {posts.length > 0 &&
             posts.map((post) => (

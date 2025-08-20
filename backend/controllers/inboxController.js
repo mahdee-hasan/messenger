@@ -46,31 +46,18 @@ const addConversation = async (req, res, next) => {
   try {
     let newCon;
     const user = await people.findById(req.user.userId, "name avatar");
-    const match = await conversation.find({
+    const match1 = await conversation.find({
       "participant_1.id": req.body.participant_2.id,
       "participant_2.id": user._id,
     });
+    const match2 = await conversation.find({
+      "participant_2.id": req.body.participant_2.id,
+      "participant_1.id": user._id,
+    });
 
-    if (!match.length) {
-      await Promise.all([
-        people.findByIdAndUpdate(
-          req.user.userId,
-          {
-            $addToSet: { "stats.connected": req.body.participant_2.id },
-          },
-          { timestamps: false }
-        ),
-        people.findByIdAndUpdate(
-          req.body.participant_2.id,
-          {
-            $addToSet: { "stats.connected": req.user.userId },
-          },
-          { timestamps: false }
-        ),
-      ]);
-    }
     if (
-      !match.length &&
+      !match1.length &&
+      !match2.length &&
       JSON.stringify(user._id) !== JSON.stringify(req.body.participant_2.id)
     ) {
       newCon = new conversation({
@@ -84,9 +71,11 @@ const addConversation = async (req, res, next) => {
 
       try {
         const result = await newCon.save();
-        res
-          .status(200)
-          .json({ message: "conversation added successfully", con: result });
+        res.status(201).json({
+          message: "conversation added successfully",
+          con: result,
+          id: result._id,
+        });
       } catch (error) {
         res.status(500).json({
           message: "unknown error occurred",
@@ -94,17 +83,31 @@ const addConversation = async (req, res, next) => {
         console.log(error.message);
       }
     } else if (
-      !match.length &&
+      !match1.length &&
+      !match2.length &&
       JSON.stringify(user._id) === JSON.stringify(req.body.participant_2.id)
     ) {
       res.status(500).json({
         message: "you want to chat with you !!! look how lonely are you",
       });
     } else {
-      res.status(500).json({ message: "chat already exist" });
+      if (match1.length) {
+        res.status(200).json({
+          error: "1 conversation already created",
+          match: true,
+          id: match1[0]._id,
+        });
+      } else {
+        res.status(200).json({
+          error: "2 conversation already created",
+          match: true,
+          id: match2[0]._id,
+        });
+      }
     }
   } catch (error) {
     console.log(error.message);
+    res.status(500).json({ error: error.message });
   }
 };
 
@@ -112,24 +115,6 @@ const deleteConversation = async (req, res, next) => {
   try {
     // Delete conversation
     const result = await conversation.findById(req.params.id);
-    if (result) {
-      await Promise.all([
-        people.findByIdAndUpdate(
-          result.participant_1.id,
-          {
-            $pull: { "stats.connected": result.participant_2.id },
-          },
-          { timestamps: false }
-        ),
-        people.findByIdAndUpdate(
-          result.participant_2.id,
-          {
-            $pull: { "stats.connected": result.participant_1.id },
-          },
-          { timestamps: false }
-        ),
-      ]);
-    }
 
     if (!result) {
       return res.status(404).json({ message: "Conversation not found" });

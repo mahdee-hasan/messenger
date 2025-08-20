@@ -39,16 +39,21 @@ const peopleSchema = mongoose.Schema(
       default: false,
     },
     cover: { type: Array },
-    stats: {
-      posts: { type: Number, default: 0 },
-      connected: {
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: "people",
-        default: [],
-      },
-    },
     posts: {
-      type: [mongoose.Types.ObjectId],
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "post",
+    },
+    friends: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "people",
+    },
+    friend_request: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "people",
+    },
+    friend_requested: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "people",
     },
     bio: {
       type: String,

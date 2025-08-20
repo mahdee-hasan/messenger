@@ -1,26 +1,11 @@
 import { useEffect } from "react";
 import useChatStore from "../stores/chatStore";
-import {
-  FaUserCircle,
-  FaHeart,
-  FaShareAlt,
-  FaComment,
-  FaRegHeart,
-} from "react-icons/fa";
+
 import { useState } from "react";
 import { ClipLoader } from "react-spinners";
-import { io } from "socket.io-client";
-//external
-import timeAgo from "../hooks/timeAgo";
-import getPrivacyIcon from "../hooks/getPrivacyIcons";
-import doLike from "../hooks/doLike";
-import undoLike from "../hooks/undoLike";
-import { BsThreeDotsVertical } from "react-icons/bs";
-import Post from "../components/Post";
 
-const socket = io(import.meta.env.VITE_API_URL, {
-  withCredentials: true,
-});
+//external
+import Post from "../components/post/Post";
 
 export default function FeedPage() {
   const [posts, setPosts] = useState([]);

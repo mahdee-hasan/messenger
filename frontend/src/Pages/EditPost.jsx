@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { FaTrash, FaEdit, FaCommentSlash, FaComment } from "react-icons/fa";
 import { IoPersonCircle } from "react-icons/io5";
 import { useParams, useNavigate, data } from "react-router-dom";
-import getPrivacyIcons from "../hooks/getPrivacyIcons";
+import getPrivacyIcons from "../hooks/post/getPrivacyIcons";
 import useChatStore from "../stores/chatStore";
 
 const EditPost = ({ data }) => {

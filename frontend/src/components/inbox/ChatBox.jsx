@@ -4,8 +4,8 @@ import Messages from "./Messages";
 import { IoPersonCircle, IoTrash } from "react-icons/io5";
 import { FaArrowCircleLeft } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
-import useChatStore from "../stores/chatStore";
-import timeAgo from "../hooks/timeAgo";
+import useChatStore from "../../stores/chatStore";
+import timeAgo from "../../hooks/timeAgo";
 
 const ChatBox = ({
   isOpen,

@@ -6,6 +6,7 @@ import {
   FaPlus,
   FaUser,
   FaUsers,
+  FaUsersCog,
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import useChatStore from "../stores/chatStore";
@@ -18,10 +19,11 @@ const MainNav = ({ data }) => {
     { sr: 1, title: "feed", to: "/", icon: FaNewspaper },
     { sr: 2, title: "messenger", to: "/inbox", icon: FaFacebookMessenger },
     { sr: 3, title: "add-post", to: "/add-post", icon: FaPlus },
+    { sr: 4, title: "friends", to: "/friends", icon: FaUsers },
     ...(isAdmin
-      ? [{ sr: 4, title: "users", to: "/users", icon: FaUsers }]
+      ? [{ sr: 5, title: "users", to: "/users", icon: FaUsersCog }]
       : []),
-    { sr: 5, title: "user", to: `/user-info/${userId}`, icon: FaUser },
+    { sr: 6, title: "user", to: `/user-info/${userId}`, icon: FaUser },
   ];
 
   const isOpen = useChatStore((s) => s.isOpenGlobal);

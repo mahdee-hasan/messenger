@@ -1,5 +1,3 @@
-const { unlink } = require("fs");
-const path = require("path");
 const { check, validationResult } = require("express-validator");
 const createError = require("http-errors");
 const people = require("../../../models/people");
@@ -45,7 +43,7 @@ const addUserValidator = [
     ),
 ];
 
-const addUserValidationHandler = (req, res, next) => {
+const addUserValidationHandler = async (req, res, next) => {
   const errors = validationResult(req);
   const mappedErrors = errors.mapped();
 
@@ -53,18 +51,13 @@ const addUserValidationHandler = (req, res, next) => {
     return next();
   }
 
-  // Delete uploaded avatar if validation fails
-  // if (req.files && req.files.length > 0) {
-  //   const fileName = req.files[0].filename;
-  //   unlink(
-  //     path.join(__dirname, "../../../public/uploads/avatars", fileName),
-  //     (err) => {
-  //       if (err) {
-  //         console.error("File delete error:", err);
-  //       }
-  //     }
-  //   );
-  // }
+  if (req.avatarName && req.public_id) {
+    const response = await cloudinary.uploader.destroy(req.public_id);
+
+    if (!response) {
+      throw new Error("error deleting avatar from cloudinary");
+    }
+  }
 
   return res.status(400).json({
     errors: mappedErrors,

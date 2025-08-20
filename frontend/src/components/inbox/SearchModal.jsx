@@ -4,7 +4,7 @@ import { IoPencilOutline, IoPersonCircle } from "react-icons/io5";
 import Modal from "react-modal";
 Modal.setAppElement("#root"); // For accessibility
 import { FaArrowLeft } from "react-icons/fa";
-import useChatStore from "../stores/chatStore";
+import useChatStore from "../../stores/chatStore";
 
 const SearchModal = ({ isOpen, setIsOpen, onClose, openFunc }) => {
   const [users, setUsers] = useState([]);

@@ -7,7 +7,7 @@ import { FaCircleUser } from "react-icons/fa6";
 
 //external imports
 
-import PageTitle from "../components/PageTitle";
+import PageTitle from "../utilities/PageTitle";
 import useChatStore from "../stores/chatStore";
 import { useNavigate } from "react-router";
 

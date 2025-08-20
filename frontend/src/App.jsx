@@ -11,20 +11,23 @@ import Users from "./Pages/Users";
 import Example from "./Pages/AddUser";
 import UserInfo from "./Pages/UserInfo";
 import fetchData from "./hooks/fetchData";
-import SessionExpired from "./components/SessionExpired";
+import SessionExpired from "./utilities/SessionExpired";
 import AddUser from "./Pages/AddUser";
 import Test from "./Pages/Test";
 import useChatStore from "./stores/chatStore";
-import PopUp from "./components/PopUp";
+import PopUp from "./utilities/PopUp";
 import Feed from "./Pages/Feed";
-import DarkMode from "./components/DarkMode";
+import DarkMode from "./utilities/DarkMode";
 import AddPost from "./Pages/AddPost";
 import MainNav from "./Layouts/MainNav";
 import User from "./Pages/User";
-import NoInternetBanner from "./components/NoInternetBanner";
+import NoInternetBanner from "./utilities/NoInternetBanner";
 import PostDetails from "./Pages/PostDetails";
 import ImagePreview from "./Pages/ImagePreview";
 import EditPost from "./Pages/EditPost";
+import Friends from "./Pages/Friends";
+import RequestedFriend from "./components/friends/RequestedFriend";
+import FriendRequest from "./components/friends/FriendRequest";
 
 const App = () => {
   const [showMessage, setShowMessage] = useState(false);
@@ -131,6 +134,13 @@ const App = () => {
           <Route path="/" element={<Feed />} />
           <Route path="/user/:userId" element={<User />} />
           <Route path="/add-post" element={<AddPost />} />
+          <Route
+            path="/friends"
+            element={<Friends user={situation.userData} />}
+          >
+            <Route path="requested" element={<RequestedFriend />} />
+            <Route path="friend-request" element={<FriendRequest />} />
+          </Route>
           {situation.userData.role === "admin" && (
             <>
               {" "}

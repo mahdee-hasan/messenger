@@ -29,9 +29,6 @@ const addPost = async (req, res, next) => {
       isEnableComments: req.body.isEnableComments,
     });
     const data = await newPost.save();
-    await people.findByIdAndUpdate(req.user.userId, {
-      $inc: { "stats.posts": 1 },
-    });
 
     res.status(200).json(data);
   } catch (error) {

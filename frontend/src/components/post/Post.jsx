@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import useChatStore from "../stores/chatStore";
+import useChatStore from "../../stores/chatStore";
 import { useNavigate } from "react-router-dom";
 import {
   FaUserCircle,
@@ -13,10 +13,10 @@ import { useState } from "react";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { IoDocumentTextOutline } from "react-icons/io5";
 //external
-import timeAgo from "../hooks/timeAgo";
-import getPrivacyIcon from "../hooks/getPrivacyIcons";
-import doLike from "../hooks/doLike";
-import undoLike from "../hooks/undoLike";
+import timeAgo from "../../hooks/timeAgo";
+import getPrivacyIcon from "../../hooks/post/getPrivacyIcons";
+import doLike from "../../hooks/post/doLike";
+import undoLike from "../../hooks/post/undoLike";
 
 export default function Post({
   post,

@@ -6,11 +6,12 @@ import { IoPersonCircle, IoSearch } from "react-icons/io5";
 import { io } from "socket.io-client";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
+import { useLocation, useNavigate } from "react-router-dom";
 
 // external imports
-import PageTitle from "../components/PageTitle";
-import SearchModal from "../components/SearchModal";
-import ChatBox from "../components/ChatBox";
+import PageTitle from "../utilities/PageTitle";
+import SearchModal from "../components/inbox/SearchModal";
+import ChatBox from "../components/inbox/ChatBox";
 import useChatStore from "../stores/chatStore";
 import timeAgo from "../hooks/timeAgo";
 
@@ -32,6 +33,16 @@ const Inbox = () => {
 
   const global = useChatStore((s) => s.setIsOpenGlobal);
   const setMsg = useChatStore((s) => s.setPopUpMessage);
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const navigate = useNavigate();
+  const searchedId = queryParams.get("id");
+  useEffect(() => {
+    if (searchedId) {
+      handleOpenChat(searchedId);
+    }
+  }, [searchedId]);
 
   const getUnread = (conversation) => {
     return conversation.participant_1.id === user._id
@@ -68,12 +79,12 @@ const Inbox = () => {
   // ✅ Load user only once on mount
   useEffect(() => {
     loadUser();
-  }, []);
+  }, [searchedId]);
 
   // ✅ Fetch conversations on selectedConversation or isOpen change
   useEffect(() => {
     fetchData();
-  }, [selectedConversation, isOpen, isTyping]);
+  }, [selectedConversation, searchedId, isOpen, isTyping]);
 
   // ✅ Socket message listener
   useEffect(() => {
@@ -215,6 +226,7 @@ const Inbox = () => {
   };
 
   const handleOpenChat = async (id) => {
+    setIsLoading(true);
     try {
       const res = await fetch(
         `${import.meta.env.VITE_API_URL}/api/inbox/open-chat/${id}`,
@@ -231,6 +243,8 @@ const Inbox = () => {
       global(true);
     } catch (error) {
       setMsg(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -368,26 +382,26 @@ const Inbox = () => {
                     <div
                       key={conversation._id}
                       onClick={() => {
-                        handleOpenChat(conversation._id);
+                        navigate(`/inbox?id=${conversation._id}`);
                       }}
                       className={`flex relative cursor-pointer hover:bg-gray-100 rounded
                            mx-1 w-full space-x-4 px-3 items-center py-2 transition ${
-                             selectedConversation._id === conversation._id
+                             selectedConversation?._id === conversation?._id
                                ? "bg-gray-50"
                                : ""
                            }`}
                     >
                       <div className="relative">
-                        {participant.avatar ? (
+                        {participant?.avatar ? (
                           <img
-                            src={participant.avatar}
+                            src={participant?.avatar}
                             className="h-10 w-10 ring rounded-full object-cover"
                             alt="user"
                           />
                         ) : (
                           <IoPersonCircle className="text-[36px] rounded-full ring" />
                         )}
-                        {activeIds.includes(participant.id) && (
+                        {activeIds.includes(participant?.id) && (
                           <div className="absolute right-0 bottom-0">
                             <span className="relative flex size-3">
                               <span
@@ -401,7 +415,7 @@ const Inbox = () => {
                       </div>
                       <div className="flex-1">
                         <p className="font-bold text-gray-700 truncate">
-                          {participant.name}
+                          {participant?.name}
                         </p>
                         <p
                           className={`text-sm truncate max-w-40 italic
@@ -411,7 +425,7 @@ const Inbox = () => {
                                 : "text-gray-500 font-medium"
                             }`}
                         >
-                          {isTyping.includes(conversation._id) ? (
+                          {isTyping.includes(conversation?._id) ? (
                             <span className="text-sm">Typing...</span>
                           ) : (
                             <span className="text-sm">

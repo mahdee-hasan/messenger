@@ -17,14 +17,14 @@ import { RxCrossCircled } from "react-icons/rx";
 import { IoSend } from "react-icons/io5";
 import { BsThreeDotsVertical } from "react-icons/bs";
 //external import
-import getPrivacyIcons from "../hooks/getPrivacyIcons";
+import getPrivacyIcons from "../hooks/post/getPrivacyIcons";
 import timeAgo from "../hooks/timeAgo";
 import useChatStore from "../stores/chatStore";
 import { FaPerson } from "react-icons/fa6";
-import undoLike from "../hooks/undoLike";
-import doLike from "../hooks/doLike";
-import undoCommentLike from "../hooks/undoCommentLike";
-import doCommentLike from "../hooks/commentLike";
+import undoLike from "../hooks/post/undoLike";
+import doLike from "../hooks/post/doLike";
+import undoCommentLike from "../hooks/post/undoCommentLike";
+import doCommentLike from "../hooks/post/commentLike";
 const PostDetails = ({ data }) => {
   const [postLoading, setPostLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(true);
@@ -206,6 +206,7 @@ const PostDetails = ({ data }) => {
     } finally {
       setReplyingCommentText("");
       setReplyingComment("");
+      setShowReplies(id);
     }
   };
   const handleUndoLike = async (id) => {

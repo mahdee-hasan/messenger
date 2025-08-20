@@ -1,6 +1,5 @@
 whats undone even now ,
 
-- connection system
 - notification
 - responsiveness
 - post sharing

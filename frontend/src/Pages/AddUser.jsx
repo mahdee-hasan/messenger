@@ -12,7 +12,7 @@ import {
 import { ClipLoader } from "react-spinners";
 import { useNavigate } from "react-router";
 // external imports
-import PageTitle from "../components/PageTitle";
+import PageTitle from "../utilities/PageTitle";
 import useChatStore from "../stores/chatStore";
 
 const AddUser = () => {

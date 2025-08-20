@@ -21,9 +21,9 @@ router.post(
   "/",
   checkLogin,
   avatarUpload,
+  cloudinaryUploader,
   addUserValidator,
   addUserValidationHandler,
-  cloudinaryUploader,
   addUser
 );
 router.delete("/:id", checkLogin, deleteUser);

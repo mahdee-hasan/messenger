@@ -6,7 +6,7 @@ import { FaRegCircleXmark } from "react-icons/fa6";
 import { IoSend, IoTrash } from "react-icons/io5";
 import { io } from "socket.io-client";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import useChatStore from "../stores/chatStore";
+import useChatStore from "../../stores/chatStore";
 
 const socket = io(import.meta.env.VITE_API_URL, {
   withCredentials: true,
