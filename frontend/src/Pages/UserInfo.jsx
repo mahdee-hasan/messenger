@@ -1,13 +1,25 @@
 //internal imports
 import React, { useState, useEffect } from "react";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ClipLoader } from "react-spinners";
-import { IoPersonCircle } from "react-icons/io5";
-import { FaEnvelope, FaUserEdit, FaCamera, FaPlus } from "react-icons/fa";
+import { IoLogOut, IoPersonCircle } from "react-icons/io5";
+import { FaCamera, FaPlus, FaUsers } from "react-icons/fa";
 import useChatStore from "../stores/chatStore";
 import { FaX } from "react-icons/fa6";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+import { Button } from "@/components/ui/button";
 
 import Post from "../components/post/Post";
+import { format } from "date-fns";
+import { BsThreeDotsVertical } from "react-icons/bs";
+import { MdEdit } from "react-icons/md";
 
 const UserInfo = () => {
   //for avatar
@@ -310,8 +322,13 @@ const UserInfo = () => {
             )}
           </div>
           <div className="mt-10">
-            <h1 className="text-2xl font-bold">{user.name}</h1>
-            <p className="text-sm text-gray-400">{user.email}</p>
+            <div className="flex items-center ">
+              <div className="mr-3">
+                {" "}
+                <p className="text-2xl font-bold">{user?.name}</p>
+                <p className="text-sm text-gray-400">{user.email}</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -325,33 +342,89 @@ const UserInfo = () => {
           </p>
           <div className="flex gap-3">
             <button
-              onClick={() => navigate("/inbox")}
+              onClick={() => navigate("/friends")}
               className="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-blue-700 flex items-center gap-2"
             >
-              <FaEnvelope /> Message
+              <FaUsers /> friends
             </button>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white px-4 py-2 rounded-lg text-sm hover:opacity-90 flex items-center gap-2"
-            >
-              <FaUserEdit /> Edit
-              {isEditing && <div onClick={handleLogout}>log out</div>}
-            </button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="cursor-pointer">
+                  <BsThreeDotsVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="start">
+                <DropdownMenuLabel className="text-center font-bold">
+                  {" "}
+                  Option
+                </DropdownMenuLabel>
+
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={() => navigate("/edit-profile")}
+                >
+                  <MdEdit /> Edit Profile
+                </DropdownMenuItem>
+
+                <DropdownMenuItem
+                  className="cursor-pointer"
+                  onClick={handleLogout}
+                >
+                  <IoLogOut /> Log out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
-        <div className="flex gap-8 text-center border-y dark:border-gray-700 py-4">
+        <div className="space-y-3 mb-6">
+          {user.dob && (
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <span className="font-medium">📅 Date of birth:</span>
+              <span>{format(user.dob, "do MMMM yyyy (EEEE)")}</span>
+            </div>
+          )}
+
+          {user.location && (
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <span className="font-medium">📍 Location:</span>
+              <span>{user.location}</span>
+            </div>
+          )}
+
+          {user.website && (
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
+              <span className="font-medium">🌐 Website:</span>
+              <a
+                href={user.website}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-indigo-600 dark:text-indigo-400 hover:underline"
+              >
+                {user.website}
+              </a>
+            </div>
+          )}
+        </div>
+        <div className="grid grid-cols-3 gap-6 border-y dark:border-gray-700 py-6">
           {[
             { label: "post", value: posts?.length || 0 },
             { label: "friends", value: user.friends?.length || 0 },
             {
               label: "following",
-              value: user.friends?.length + user.friend_requested?.length || 0,
+              value:
+                (user.friends?.length || 0) +
+                (user.friend_requested?.length || 0),
             },
           ].map((item, i) => (
-            <div key={i} className="flex items-center space-x-1">
-              <p className="text-lg font-semibold">{item.value}</p>
-              <p className="text-xs capitalize text-gray-500 dark:text-gray-400">
+            <div
+              key={i}
+              className="flex flex-col items-center justify-center p-4 rounded-2xl bg-white dark:bg-gray-900 shadow-sm hover:shadow-md transition-shadow duration-200"
+            >
+              <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+                {item.value}
+              </p>
+              <p className="text-sm capitalize text-gray-500 dark:text-gray-400">
                 {item.label}
               </p>
             </div>

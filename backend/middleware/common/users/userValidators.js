@@ -6,8 +6,8 @@ const addUserValidator = [
   check("name")
     .isLength({ min: 1 })
     .withMessage("Name is required")
-    .isAlpha("en-US", { ignore: " -" })
-    .withMessage("Name must not contain anything other than alphabets")
+    .matches(/^[a-zA-Z\s-]+$/)
+    .withMessage("Name must only contain letters, spaces, or hyphens")
     .trim(),
   check("email")
     .isEmail()
@@ -35,6 +35,29 @@ const addUserValidator = [
       } catch (err) {
         throw createError(err.message || "Server error");
       }
+    }),
+  check("dob")
+    .notEmpty()
+    .withMessage("Date of birth is required")
+    .isISO8601()
+    .withMessage("Invalid date format")
+    .toDate()
+    .custom((value) => {
+      const today = new Date();
+      const minAge = 18;
+
+      // calculate age
+      let age = today.getFullYear() - value.getFullYear();
+      const m = today.getMonth() - value.getMonth();
+
+      if (m < 0 || (m === 0 && today.getDate() < value.getDate())) {
+        age--;
+      }
+
+      if (age < minAge) {
+        throw new Error("You must be at least 18 years old");
+      }
+      return true;
     }),
   check("password")
     .isStrongPassword()

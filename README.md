@@ -1,10 +1,11 @@
 whats undone even now ,
 
+- editing profile
 - notification
 - responsiveness
 - post sharing
 - mentioning
-- editing profile
+
 - posts privacy
 - blocking
 - loader skeleton

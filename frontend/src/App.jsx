@@ -28,6 +28,7 @@ import EditPost from "./Pages/EditPost";
 import Friends from "./Pages/Friends";
 import RequestedFriend from "./components/friends/RequestedFriend";
 import FriendRequest from "./components/friends/FriendRequest";
+import EditProfile from "./Pages/EditProfile";
 
 const App = () => {
   const [showMessage, setShowMessage] = useState(false);
@@ -134,6 +135,10 @@ const App = () => {
           <Route path="/" element={<Feed />} />
           <Route path="/user/:userId" element={<User />} />
           <Route path="/add-post" element={<AddPost />} />
+          <Route
+            path="/edit-profile"
+            element={<EditProfile user={situation.userData} />}
+          />
           <Route
             path="/friends"
             element={<Friends user={situation.userData} />}

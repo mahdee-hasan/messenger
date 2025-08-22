@@ -14,13 +14,22 @@ import { useNavigate } from "react-router";
 // external imports
 import PageTitle from "../utilities/PageTitle";
 import useChatStore from "../stores/chatStore";
-
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
+import { Button } from "@/components/ui/button";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { FaCalendar } from "react-icons/fa";
 const AddUser = () => {
   //useStates
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState({});
   const [preview, setPreview] = useState(null);
   const [role, setRole] = useState("user");
+  const [dob, setDob] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -45,6 +54,7 @@ const AddUser = () => {
       setFormData({ ...formData, [e.target.name]: e.target.value });
     }
   };
+
   //radio button handling for role
   const handleRole = (e) => {
     setRole(e.target.value);
@@ -61,6 +71,7 @@ const AddUser = () => {
     data.append("mobile", formData.mobile);
     data.append("password", formData.password);
     data.append("role", role);
+    data.append("dob", dob ? dob.toISOString() : "");
     if (formData.avatar) {
       data.append("avatar", formData.avatar);
     }
@@ -123,6 +134,7 @@ const AddUser = () => {
           </label>
           <input
             type="text"
+            id="name"
             name="name"
             placeholder="adam"
             value={formData.name}
@@ -143,6 +155,7 @@ const AddUser = () => {
           <input
             type="email"
             name="email"
+            id="email"
             placeholder="name@company.com"
             value={formData.email}
             onChange={handleChange}
@@ -162,6 +175,7 @@ const AddUser = () => {
           <input
             type="text"
             name="mobile"
+            id="mobile"
             placeholder="+8801**********"
             value={formData.mobile}
             onChange={handleChange}
@@ -172,6 +186,32 @@ const AddUser = () => {
           {errors.mobile && (
             <p className="text-red-400 text-sm mb-2">{errors.mobile.msg}</p>
           )}
+          <label className="mt-5 text-sm text-gray-600 dark:text-gray-200 relative tracking-wider normal-case">
+            enter date Of birth:{" "}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  data-empty={!dob}
+                  className="data-[empty=true]:text-muted-foreground w-[280px] justify-start text-left font-normal"
+                >
+                  <FaCalendar />
+                  {dob ? format(dob, "PPP") : <span>Pick a date</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar
+                  mode="single"
+                  captionLayout="dropdown"
+                  selected={dob}
+                  onSelect={setDob}
+                />
+              </PopoverContent>
+            </Popover>
+          </label>
+          {errors.dob && (
+            <p className="text-red-400 text-sm mb-2">{errors.dob.msg}</p>
+          )}
           <label
             htmlFor="password"
             className="mt-5 text-sm text-gray-600 dark:text-gray-200 relative tracking-wider normal-case"
@@ -181,6 +221,7 @@ const AddUser = () => {
             <input
               type={showPassword ? "text" : "password"}
               name="password"
+              id="password"
               placeholder="must use both case,number, and symbol "
               value={formData.password}
               onChange={handleChange}
@@ -222,6 +263,7 @@ const AddUser = () => {
                 onChange={handleRole}
                 type="radio"
                 name="role"
+                id="role"
                 value="user"
               />{" "}
               user{" "}

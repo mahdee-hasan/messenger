@@ -38,6 +38,9 @@ const peopleSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    dob: { type: Date, required: true },
+    location: { type: String },
+    website: { type: String },
     cover: { type: Array },
     posts: {
       type: [mongoose.Schema.Types.ObjectId],
@@ -57,6 +60,13 @@ const peopleSchema = mongoose.Schema(
     },
     bio: {
       type: String,
+    },
+    updatingTime: {
+      name: Date,
+      password: Date,
+      dob: Date,
+      bio: Date,
+      location: Date,
     },
   },
   {

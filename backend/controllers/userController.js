@@ -361,7 +361,92 @@ const undoFriendRequest = async (req, res, next) => {
     });
   }
 };
+const updateName = async (req, res, next) => {
+  try {
+    await people.findByIdAndUpdate(req.user.userId, {
+      $set: {
+        name: req.body.name,
+        "updatingTime.name": new Date(),
+      },
+    });
+    res.status(200).json({
+      success: true,
+      errors: null,
+      message: "name updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      errors: { common: error.message || "server error" },
+      message: null,
+    });
+  }
+};
+const updateDob = async (req, res, next) => {
+  try {
+    await people.findByIdAndUpdate(req.user.userId, {
+      $set: {
+        dob: req.body.dob,
+        "updatingTime.dob": new Date(),
+      },
+    });
+    res.status(200).json({
+      success: true,
+      errors: null,
+      message: "date of birth updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      errors: { common: error.message || "server error" },
+      message: null,
+    });
+  }
+};
 
+const updateLocation = async (req, res, next) => {
+  try {
+    await people.findByIdAndUpdate(req.user.userId, {
+      $set: {
+        location: req.body.location,
+        "updatingTime.location": new Date(),
+      },
+    });
+    res.status(200).json({
+      success: true,
+      errors: null,
+      message: "location updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      errors: { common: error.message || "server error" },
+      message: null,
+    });
+  }
+};
+
+const updateWebsite = async (req, res, next) => {
+  try {
+    await people.findByIdAndUpdate(req.user.userId, {
+      $set: {
+        website: req.body.website,
+        "updatingTime.website": new Date(),
+      },
+    });
+    res.status(200).json({
+      success: true,
+      errors: null,
+      message: "website updated successfully",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      errors: { common: error.message || "server error" },
+      message: null,
+    });
+  }
+};
 module.exports = {
   setCover,
   setAvatar,
@@ -375,4 +460,8 @@ module.exports = {
   rejectFriend,
   removeFriend,
   undoFriendRequest,
+  updateName,
+  updateDob,
+  updateLocation,
+  updateWebsite,
 };
