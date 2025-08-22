@@ -47,7 +47,7 @@ const EditProfile = ({ user }) => {
   const [showPassword, setShowPassword] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isUpdated, setIsUpdated] = useState(false);
-  const [birthday, setBirthday] = useState(user.dob);
+  const [birthday, setBirthday] = useState(user.dob || null);
   const [userLocation, setUserLocation] = useState(user.location || "");
   const [web, setWeb] = useState(user.website || "");
   const [updatingError, setUpdatingError] = useState(null);
@@ -369,7 +369,9 @@ const EditProfile = ({ user }) => {
           <MdCake /> Birthday:
         </label>
         <div className="flex justify-between p-4 ">
-          <p>{format(user.dob, "dd MMMM yyyy (EEEE)")}</p>
+          <p>
+            {user.dob ? format(user.dob, "dd MMMM yyyy (EEEE)") : "not set yet"}
+          </p>
           <Dialog>
             <DialogTrigger asChild className="cursor-pointer">
               <MdEdit />

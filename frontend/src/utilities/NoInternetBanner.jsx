@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { MdOutlineWifiOff } from "react-icons/md";
 
 const NoInternetBanner = () => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -21,9 +22,12 @@ const NoInternetBanner = () => {
   return (
     <div
       className="bg-gray-100 h-[100vh] flex items-center justify-center
-     text-gray-800 text-center  fixed top-0 left-0 right-0 z-100"
+     text-gray-800 text-center  fixed top-16 left-0 right-0 z-100"
     >
-      <p> ⚠️ No internet connection. Please check your network.</p>
+      <div className="flex flex-col items-center pb-44 ">
+        <MdOutlineWifiOff className="text-7xl" />
+        <p> No internet connection. Please check your network.</p>
+      </div>
     </div>
   );
 };
