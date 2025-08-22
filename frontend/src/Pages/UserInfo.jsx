@@ -396,10 +396,10 @@ const UserInfo = () => {
             <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300">
               <span className="font-medium">🌐 Website:</span>
               <a
-                href={user.website}
+                onClick={() => window.open(`https://${user.website}`, "_blank")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-indigo-600 dark:text-indigo-400 hover:underline"
+                className="text-indigo-600 cursor-pointer dark:text-indigo-400 hover:underline"
               >
                 {user.website}
               </a>

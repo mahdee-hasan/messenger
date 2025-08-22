@@ -675,7 +675,12 @@ const EditProfile = ({ user }) => {
               user.location &&
               " bg-gray-300 rounded-2xl px-2 hover:underline cursor-pointer"
             }`}
-            onClick={() => user.website}
+            onClick={() =>
+              window.open(
+                user.website ? `https://${user.website}` : "",
+                "_blank"
+              )
+            }
           >
             {user.website || "website is not added yet"}
           </p>
