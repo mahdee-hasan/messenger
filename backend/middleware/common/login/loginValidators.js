@@ -1,10 +1,35 @@
 const { check, validationResult } = require("express-validator");
-
+const bcrypt = require("bcrypt");
+const people = require("../../../models/people");
 const doLoginValidators = [
   check("username")
     .isLength({ min: 1 })
-    .withMessage("Mobile or email is required"),
-  check("password").isLength({ min: 1 }).withMessage("Password is required"),
+    .withMessage("Mobile or email is required")
+    .custom(async (value, { req }) => {
+      const user = await people.findOne({
+        $or: [{ email: value }, { mobile: value }],
+      });
+      if (user) {
+        req.userPassword = user.password;
+      } else {
+        throw new Error("invalid username or mobile number");
+      }
+      return true;
+    }),
+  check("password")
+    .isLength({ min: 1 })
+    .withMessage("Password is required")
+    .custom(async (value, { req }) => {
+      if (req.userPassword) {
+        const isValidPassword = await bcrypt.compare(
+          req.body.password,
+          req.userPassword
+        );
+        if (!isValidPassword) {
+          throw new Error("invalid password");
+        }
+      }
+    }),
 ];
 
 const loginValidationHandler = (req, res, next) => {
@@ -15,9 +40,6 @@ const loginValidationHandler = (req, res, next) => {
     next();
   } else {
     res.status(400).json({
-      data: {
-        username: req.body.username,
-      },
       errors: mappedErrors,
     });
   }

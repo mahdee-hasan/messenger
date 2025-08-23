@@ -6,6 +6,7 @@ import { ClipLoader } from "react-spinners";
 
 //external
 import Post from "../components/post/Post";
+import PageTitle from "@/utilities/PageTitle";
 
 export default function FeedPage() {
   const [posts, setPosts] = useState([]);
@@ -61,6 +62,7 @@ export default function FeedPage() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100">
       {/* Feed */}
+      <PageTitle title="feed - social_box application" />
       <div className="max-w-2xl mx-auto py-8 px-4 space-y-8">
         {posts.length > 0 &&
           posts.map((post) => (

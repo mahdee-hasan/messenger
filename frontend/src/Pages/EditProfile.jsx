@@ -39,6 +39,7 @@ import { MdCake, MdEdit, MdLocationPin, MdWeb } from "react-icons/md";
 import { FaRegEye, FaRegEyeSlash } from "react-icons/fa";
 import { format } from "date-fns";
 import useChatStore from "@/stores/chatStore";
+import PageTitle from "@/utilities/PageTitle";
 
 const EditProfile = ({ user }) => {
   //for name
@@ -223,6 +224,7 @@ const EditProfile = ({ user }) => {
   };
   return (
     <div className="max-w-3xl mx-auto">
+      <PageTitle title="edit about info- social_box application" />
       <div className="w-50 mx-auto h-12 p-4"> Edit about info </div>
       {/* for changing name */}
       <div className="flex flex-col">

@@ -18,52 +18,29 @@ const login = async (req, res, next) => {
     const user = await people.findOne({
       $or: [{ email: req.body.username }, { mobile: req.body.username }],
     });
-    let errorInput = {};
-    if (user && user._id) {
-      const isValidPassword = await bcrypt.compare(
-        req.body.password,
-        user.password
-      );
-      if (isValidPassword) {
-        const userObject = {
-          userId: user._id,
-          username: user.name,
-          email: user.email,
-          role: user.role,
-        };
 
-        const token = jwt.sign(userObject, process.env.JWT_SECRET, {
-          expiresIn: process.env.JWT_EXPIRY,
-        });
+    const userObject = {
+      userId: user._id,
+      username: user.name,
+      email: user.email,
+      role: user.role,
+    };
 
-        res.cookie(process.env.COOKIE_NAME, token, {
-          maxAge: parseInt(process.env.JWT_EXPIRY), // in milliseconds
-          signed: true,
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production", // only true in production (https)
-          sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // compatible for both
-        });
-
-        res.status(200).json(userObject);
-      } else {
-        errorInput.password = "wrong password";
-        res.status(404).json({ message: "error here" });
-      }
-    } else {
-      errorInput.username = "invalid username or phone";
-      res.status(404).json({ message: "error here" });
-    }
-  } catch (error) {
-    res.status(500).json({
-      data: {
-        username: req.body.username,
-      },
-      errors: {
-        common: {
-          msg: error.message,
-        },
-      },
+    const token = jwt.sign(userObject, process.env.JWT_SECRET, {
+      expiresIn: process.env.JWT_EXPIRY,
     });
+
+    res.cookie(process.env.COOKIE_NAME, token, {
+      maxAge: parseInt(process.env.JWT_EXPIRY), // in milliseconds
+      signed: true,
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production", // only true in production (https)
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // compatible for both
+    });
+
+    res.status(200).json(userObject);
+  } catch (error) {
+    res.status(500).json({ error: "server error" });
   }
 };
 const logout = (req, res, next) => {

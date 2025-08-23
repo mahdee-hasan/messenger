@@ -110,7 +110,7 @@ const AddUser = () => {
   return (
     <>
       {" "}
-      <PageTitle title="add-user" />
+      <PageTitle title="add user - social_box application" />
       <div
         className="rounded max-h-[100vh] max-w-3xl mx-auto p-10 overflow-scroll 
       scrollbar-hide bg-gray-100 dark:bg-gray-700"

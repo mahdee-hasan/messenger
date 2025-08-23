@@ -25,6 +25,7 @@ import undoLike from "../hooks/post/undoLike";
 import doLike from "../hooks/post/doLike";
 import undoCommentLike from "../hooks/post/undoCommentLike";
 import doCommentLike from "../hooks/post/commentLike";
+import PageTitle from "@/utilities/PageTitle";
 const PostDetails = ({ data }) => {
   const [postLoading, setPostLoading] = useState(true);
   const [commentLoading, setCommentLoading] = useState(true);
@@ -261,6 +262,7 @@ const PostDetails = ({ data }) => {
   if (postLoading) {
     return (
       <div className="max-w-3xl mx-auto p-4">
+        <PageTitle title="post details - social_box application" />
         <div
           className="bg-white dark:bg-gray-800 space-y-2  rounded-xl p-5 shadow-sm
          border border-gray-200 dark:border-gray-700"

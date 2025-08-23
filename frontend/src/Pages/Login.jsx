@@ -4,6 +4,7 @@ import { IoEye, IoEyeOff } from "react-icons/io5";
 import { ClipLoader } from "react-spinners";
 import useChatStore from "../stores/chatStore";
 import { useNavigate } from "react-router";
+import PageTitle from "@/utilities/PageTitle";
 
 // external imports
 // ..
@@ -15,12 +16,11 @@ const Login = ({ data }) => {
     password: "",
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState(null);
-  const [passwordError, setPasswordError] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState(null);
   const setMsg = useChatStore((s) => s.setPopUpMessage);
-  const navigate = useNavigate();
+
   //replace the location to user-info if user is logged in
   useEffect(() => {
     if (data?.isLoggedIn) {
@@ -33,11 +33,6 @@ const Login = ({ data }) => {
   //handle the input
   const handleInput = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    if (e.target.name === "username") {
-      setUsernameError(null);
-    } else {
-      setPasswordError(null);
-    }
   };
 
   //send a post request when Submit the form
@@ -53,14 +48,17 @@ const Login = ({ data }) => {
         },
         credentials: "include",
       });
-      //take action for the given response from backend
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error("error occurred");
-        return;
-      }
       //format the data
       const data = await res.json();
+      //take action for the given response from backend
+      if (!res.ok) {
+        if (res.status === 400) {
+          setError(data.errors);
+        }
+        throw new Error(data.error || "something went wrong");
+      }
+
+      setMsg("login successful");
       //set userId to the local storage
       localStorage.setItem(
         "userId",
@@ -73,16 +71,16 @@ const Login = ({ data }) => {
       location.replace(`/user-info/${data.userId}`);
     } catch (err) {
       //take action after catching the error
-      setMsg(err.message);
+      setMsg(err.message || "login failed");
     } finally {
       setIsLoading(false);
-      setMsg("login successful");
     }
   };
 
   return (
     <div className="flex items-center  max-w-3xl mx-auto justify-center min-h-screen bg-gray-100">
       {/* make form to fill an object of username and users password */}
+      <PageTitle title="login - social_box application" />
       <form
         onSubmit={handleSubmit}
         className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-sm"
@@ -102,13 +100,14 @@ const Login = ({ data }) => {
             id="username"
             value={formData.username}
             onChange={handleInput}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg 
+            focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
         </div>
-        {usernameError && (
+        {error?.username && (
           <div className="mb-4 text-sm text-red-600 font-medium">
-            {usernameError}
+            {error?.username.msg}
           </div>
         )}
         <div className="mb-2 relative">
@@ -128,9 +127,9 @@ const Login = ({ data }) => {
             rounded-lg pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
-          {passwordError && (
+          {error?.password && (
             <div className="mb-4 text-sm text-red-600 font-medium">
-              {passwordError}
+              {error?.password.msg}
             </div>
           )}
           <button

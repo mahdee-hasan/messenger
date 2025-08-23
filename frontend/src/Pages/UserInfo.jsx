@@ -20,6 +20,7 @@ import Post from "../components/post/Post";
 import { format } from "date-fns";
 import { BsThreeDotsVertical } from "react-icons/bs";
 import { MdEdit } from "react-icons/md";
+import PageTitle from "@/utilities/PageTitle";
 
 const UserInfo = () => {
   //for avatar
@@ -204,6 +205,7 @@ const UserInfo = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-white">
+      <PageTitle title="You - social_box application" />
       <div className="relative h-56 max-w-3xl mx-auto">
         {coverPreview && !coverUploading ? (
           <>

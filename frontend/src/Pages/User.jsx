@@ -10,6 +10,7 @@ import doFriendRequest from "../hooks/Friends/doFriendRequest";
 import removeFriend from "../hooks/Friends/removeFriends";
 import acceptFriendRequest from "../hooks/Friends/acceptFriendRequest";
 import undoFriendRequest from "../hooks/Friends/undoFriendRequest";
+import PageTitle from "@/utilities/PageTitle";
 
 const User = () => {
   const [posts, setPosts] = useState([]);
@@ -218,6 +219,7 @@ const User = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-white">
+      <PageTitle title={`${user.name} - social_box application`} />
       {/* Cover */}
       <div className="relative h-56 max-w-3xl mx-auto">
         {user?.cover?.[0]?.src && (

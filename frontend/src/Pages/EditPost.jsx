@@ -5,6 +5,7 @@ import { IoPersonCircle } from "react-icons/io5";
 import { useParams, useNavigate, data } from "react-router-dom";
 import getPrivacyIcons from "../hooks/post/getPrivacyIcons";
 import useChatStore from "../stores/chatStore";
+import PageTitle from "@/utilities/PageTitle";
 
 const EditPost = ({ data }) => {
   const [post, setPost] = useState({});
@@ -138,6 +139,7 @@ const EditPost = ({ data }) => {
   return (
     <div className="max-w-xl mx-auto mt-10 bg-white p-5 rounded-2xl shadow-lg border border-gray-200">
       {/* Header */}
+      <PageTitle title="edit post - social_box application" />
       <div className="flex items-center gap-3 mb-4">
         {data.avatar ? (
           <img

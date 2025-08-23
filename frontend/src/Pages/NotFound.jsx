@@ -1,3 +1,4 @@
+import PageTitle from "@/utilities/PageTitle";
 import { FaArrowLeft } from "react-icons/fa";
 import { Link } from "react-router-dom";
 
@@ -5,6 +6,7 @@ export default function NotFoundPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 px-4 text-center">
       {/* 404 Big Text */}
+      <PageTitle title=" ! page not found - social_box application" />
       <h1 className="text-9xl font-extrabold text-gray-300 tracking-widest select-none">
         404
       </h1>

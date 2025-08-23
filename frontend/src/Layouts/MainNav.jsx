@@ -10,6 +10,7 @@ import {
 } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import useChatStore from "../stores/chatStore";
+import { IoNotificationsSharp } from "react-icons/io5";
 
 const MainNav = ({ data }) => {
   const navigate = useNavigate();
@@ -20,8 +21,14 @@ const MainNav = ({ data }) => {
     { sr: 2, title: "messenger", to: "/inbox", icon: FaFacebookMessenger },
     { sr: 3, title: "add-post", to: "/add-post", icon: FaPlus },
     { sr: 4, title: "friends", to: "/friends", icon: FaUsers },
+    {
+      sr: 5,
+      title: "notifications",
+      to: "/notifications",
+      icon: IoNotificationsSharp,
+    },
     ...(isAdmin
-      ? [{ sr: 5, title: "users", to: "/users", icon: FaUsersCog }]
+      ? [{ sr: 5.5, title: "users", to: "/users", icon: FaUsersCog }]
       : []),
     { sr: 6, title: "user", to: `/user-info/${userId}`, icon: FaUser },
   ];
@@ -48,7 +55,8 @@ const MainNav = ({ data }) => {
               key={item.sr}
               title={item.title}
               to={item.to}
-              className="flex items-center gap-2 px-3 py-1.5 bg-white text-indigo-600 rounded-full shadow hover:bg-indigo-100 transition"
+              className="flex items-center gap-2 px-3 py-1.5
+               bg-white text-indigo-600 rounded-full shadow hover:bg-indigo-100 transition"
             >
               <item.icon />
             </Link>

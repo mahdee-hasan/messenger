@@ -10,6 +10,7 @@ import doFriendRequest from "../hooks/Friends/doFriendRequest";
 import useChatStore from "../stores/chatStore";
 import FriendsSkeleton from "../components/friends/FriendSkeleton";
 import removeFriend from "../hooks/Friends/removeFriends";
+import PageTitle from "@/utilities/PageTitle";
 const Friends = ({ user }) => {
   const [friends, setFriends] = useState([]);
   const [suggestedFriends, setSuggestedFriends] = useState([]);
@@ -95,6 +96,7 @@ const Friends = ({ user }) => {
   if (isLoading) return <FriendsSkeleton />;
   return (
     <div className="max-w-3xl mx-auto px-6 py-8">
+      <PageTitle title="friends - social_box application" />
       {/* Top Nav */}
       <div className="flex items-center justify-center gap-6 mb-8">
         {navItems.map((item) => (

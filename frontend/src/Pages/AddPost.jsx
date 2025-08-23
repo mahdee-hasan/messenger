@@ -1,3 +1,4 @@
+import PageTitle from "@/utilities/PageTitle";
 import { useState } from "react";
 import {
   FaUserCircle,
@@ -82,6 +83,7 @@ export default function AddPost() {
   return (
     <div className="max-w-xl mx-auto p-4 bg-white rounded-2xl shadow border">
       {/* Header */}
+      <PageTitle title="add post - social_box application" />
       <div className="flex items-center gap-3 mb-4">
         <FaUserCircle className="text-4xl text-gray-500" />
         <div>

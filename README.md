@@ -1,6 +1,6 @@
 whats undone even now ,
 
-- editing profile
+
 - notification
 - responsiveness
 - post sharing
