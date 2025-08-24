@@ -6,6 +6,7 @@ import { FaArrowCircleLeft } from "react-icons/fa";
 import { ClipLoader } from "react-spinners";
 import useChatStore from "../../stores/chatStore";
 import timeAgo from "../../hooks/timeAgo";
+import { useNavigate } from "react-router";
 
 const ChatBox = ({
   isOpen,
@@ -20,6 +21,7 @@ const ChatBox = ({
   const [senderDetails, setSenderDetails] = useState(null);
   const [userDetailsLoading, setUserDetailsLoading] = useState(true);
 
+  const navigate = useNavigate();
   const setPopMsg = useChatStore((s) => s.setPopUpMessage);
 
   useEffect(() => {
@@ -62,6 +64,7 @@ const ChatBox = ({
       setPopMsg("there is a problem deleting conversation");
     } finally {
       setIsLoading(false);
+      navigate("/inbox");
     }
   };
 
@@ -72,7 +75,10 @@ const ChatBox = ({
       } relative text-white bg-white h-[100vh] md:h-[88vh] flex-col items-start justify-between`}
     >
       <FaArrowCircleLeft
-        onClick={() => func(selectedConversation._id)}
+        onClick={() => {
+          func(selectedConversation._id);
+          navigate("/inbox");
+        }}
         className="absolute md:hidden cursor-pointer left-0.5 top-0.5 text-2xl text-gray-700 bg-white rounded-full"
       />
 

@@ -33,7 +33,7 @@ const Inbox = () => {
 
   const global = useChatStore((s) => s.setIsOpenGlobal);
   const setMsg = useChatStore((s) => s.setPopUpMessage);
-
+  const setMsgUnseen = useChatStore((s) => s.setUnseenMsg);
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
   const navigate = useNavigate();
@@ -191,6 +191,7 @@ const Inbox = () => {
       setMsg(error.message);
     } finally {
       setIsLoading(false);
+      setMsgUnseen(0);
     }
   };
 

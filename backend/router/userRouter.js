@@ -19,6 +19,8 @@ const {
   updateDob,
   updateLocation,
   updateWebsite,
+  getNotifications,
+  getUnreadCounts,
 } = require("../controllers/userController");
 const avatarUpload = require("../middleware/common/users/avatarUploads");
 const cloudinaryUploader = require("../utilities/cloudinaryUploader");
@@ -86,4 +88,6 @@ router.put(
   updateWebsiteValidationHandler,
   updateWebsite
 );
+router.get("/notifications", checkLogin, getNotifications);
+router.get("/unread-counts", checkLogin, getUnreadCounts);
 module.exports = router;

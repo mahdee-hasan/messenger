@@ -19,7 +19,7 @@ const privacyOptions = [
   { label: "Only Me", icon: <FaLock />, value: "private" },
 ];
 
-export default function AddPost() {
+export default function AddPost({ user }) {
   const [text, setText] = useState("");
   const [images, setImages] = useState([]);
   const [previews, setPreviews] = useState([]);
@@ -85,9 +85,14 @@ export default function AddPost() {
       {/* Header */}
       <PageTitle title="add post - social_box application" />
       <div className="flex items-center gap-3 mb-4">
-        <FaUserCircle className="text-4xl text-gray-500" />
+        {user.avatar ? (
+          <img src={user.avatar} alt="user" className="h-9 w-9 rounded-full" />
+        ) : (
+          <FaUserCircle className="text-4xl text-gray-500" />
+        )}
+
         <div>
-          <h2 className="font-semibold text-lg">Mahdee Hasan</h2>
+          <h2 className="font-semibold text-lg">{user.name}</h2>
           <div className="relative">
             <button
               type="button"

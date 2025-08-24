@@ -4,6 +4,7 @@ const post = require("../models/post");
 const conversation = require("../models/conversation");
 const message = require("../models/message");
 const mongoose = require("mongoose");
+const notification = require("../models/notifications");
 
 const setCover = async (req, res, next) => {
   try {
@@ -173,7 +174,7 @@ const doFriendRequest = async (req, res, next) => {
 
     const me = await people
       .findById(req.user.userId)
-      .select("friends friend_requested friend_request");
+      .select("friends friend_requested friend_request avatar");
     if (me.friends.includes(id)) {
       return res.status(400).json({
         success: false,
@@ -195,7 +196,15 @@ const doFriendRequest = async (req, res, next) => {
         error: "This user has already sent you a request. Accept it instead.",
       });
     }
-
+    const newNotification = new notification({
+      title: "friend request",
+      description: `${req.user.username} sent you friend request`,
+      author: [id],
+      pic: me.avatar,
+      link: "/friends/friend-request",
+    });
+    const notificationObject = await newNotification.save();
+    global.io.emit("new_notification", notificationObject);
     await Promise.all([
       people.findByIdAndUpdate(
         id,
@@ -447,6 +456,75 @@ const updateWebsite = async (req, res, next) => {
     });
   }
 };
+const getNotifications = async (req, res, next) => {
+  try {
+    // Fetch unseen notifications (before marking)
+    const unSeenNotifications = await notification
+      .find({
+        author: req.user.userId,
+        isSeen: { $nin: [req.user.userId] },
+      })
+      .sort({ createdAt: -1 });
+
+    const seenNotifications = await notification
+      .find({
+        author: req.user.userId,
+        isSeen: req.user.userId,
+      })
+      .sort({ createdAt: -1 });
+
+    // Mark all notifications as seen
+    await notification.updateMany(
+      { author: req.user.userId },
+      { $addToSet: { isSeen: req.user.userId } }
+    );
+
+    // Return response
+    if (!unSeenNotifications.length && !seenNotifications.length) {
+      res.status(404).json({ error: "no notifications found" });
+    } else {
+      res.status(200).json({
+        seen: seenNotifications,
+        unseen: unSeenNotifications,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message || "server error" });
+  }
+};
+
+const getUnreadCounts = async (req, res, next) => {
+  try {
+    const notifications = await notification.find({
+      author: req.user.userId,
+      isSeen: { $nin: [req.user.userId] },
+    });
+
+    const conversations = await conversation.find({
+      $or: [
+        {
+          "participant_1.id": req.user.userId,
+          "participant_1.unseenCount": { $gt: 0 },
+        },
+        {
+          "participant_2.id": req.user.userId,
+          "participant_2.unseenCount": { $gt: 0 },
+        },
+      ],
+    });
+
+    if (!notifications.length && !conversations.length) {
+      res.status(404).json({ error: "no notifications found" });
+    } else {
+      res.status(200).json({
+        notificationCount: notifications.length,
+        messageCount: conversations.length,
+      });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message || "server error" });
+  }
+};
 module.exports = {
   setCover,
   setAvatar,
@@ -464,4 +542,6 @@ module.exports = {
   updateDob,
   updateLocation,
   updateWebsite,
+  getNotifications,
+  getUnreadCounts,
 };
