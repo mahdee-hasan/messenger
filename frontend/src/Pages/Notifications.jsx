@@ -15,7 +15,9 @@ const Notifications = ({ user }) => {
   const [isLoading, setIsLoading] = useState(true);
   const setPopUpMsg = useChatStore((s) => s.setPopUpMessage);
 
-  const setNotificationUnseen = useChatStore((s) => s.setUnseenNotification);
+  const resetUnseenNotification = useChatStore(
+    (s) => s.resetUnseenNotification
+  );
 
   const navigate = useNavigate();
 
@@ -56,7 +58,7 @@ const Notifications = ({ user }) => {
       setPopUpMsg(error.message);
     } finally {
       setIsLoading(false);
-      setNotificationUnseen(0);
+      resetUnseenNotification();
     }
   };
   if (isLoading) {

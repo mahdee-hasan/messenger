@@ -28,6 +28,15 @@ const setCover = async (req, res, next) => {
       { new: true }
     );
 
+    const newNotification = new notification({
+      title: "profile update",
+      description: `${req.user.username} has changed his cover photo`,
+      author: [user.friends],
+      pic: req.coverName,
+      link: `/user/${user._id}`,
+    });
+    const notificationObject = await newNotification.save();
+    global.io.emit("new_notification", notificationObject);
     res.status(200).json(user);
   } catch (error) {
     console.log(error.message);
@@ -78,6 +87,15 @@ const setAvatar = async (req, res, next) => {
       { new: true }
     );
 
+    const newNotification = new notification({
+      title: "profile update",
+      description: `${req.user.username} has changed his profile picture`,
+      author: [user.friends],
+      pic: req.avatarName,
+      link: `/user/${user._id}`,
+    });
+    const notificationObject = await newNotification.save();
+    global.io.emit("new_notification", notificationObject);
     res.status(200).json(user);
   } catch (error) {
     console.log(error.message);
@@ -245,7 +263,9 @@ const acceptFriendRequest = async (req, res, next) => {
     }
 
     // check if request exists
-    const me = await people.findById(req.user.userId).select("friend_request");
+    const me = await people
+      .findById(req.user.userId)
+      .select("friend_request avatar");
     if (!me.friend_request.includes(req.body.id)) {
       return res.status(400).json({
         success: false,
@@ -253,7 +273,15 @@ const acceptFriendRequest = async (req, res, next) => {
         error: "No pending request from this user",
       });
     }
-
+    const newNotification = new notification({
+      title: "friend request",
+      description: `${req.user.username} accepted your friend request`,
+      author: [req.body.id],
+      pic: me.avatar,
+      link: `/user/${req.user.userId}`,
+    });
+    const notificationObject = await newNotification.save();
+    global.io.emit("new_notification", notificationObject);
     // update both
     await Promise.all([
       people.findByIdAndUpdate(

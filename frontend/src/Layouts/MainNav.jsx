@@ -22,13 +22,18 @@ const MainNav = ({ data }) => {
   const setMsgUnseen = useChatStore((s) => s.setUnseenMsg);
   const notificationUnseen = useChatStore((s) => s.unseenNotification);
   const setNotificationUnseen = useChatStore((s) => s.setUnseenNotification);
+  const increaseUnseenNotification = useChatStore(
+    (s) => s.increaseUnseenNotification
+  );
+  const increaseUnseenMsg = useChatStore((s) => s.increaseUnseenMsg);
+
   const isAdmin = data?.userData?.role === "admin";
   const userId = data?.userData?._id;
   const navItems = [
-    { sr: 1, title: "feed", to: "/", icon: FaNewspaper },
+    { sr: 1, title: "", to: "/", icon: FaNewspaper },
     {
       sr: 2,
-      title: "messenger",
+      title: "inbox",
       to: "/inbox",
       icon: FaFacebookMessenger,
       ping: msgUnseen,
@@ -45,7 +50,7 @@ const MainNav = ({ data }) => {
     ...(isAdmin
       ? [{ sr: 5.5, title: "users", to: "/users", icon: FaUsersCog }]
       : []),
-    { sr: 6, title: "user", to: `/user-info/${userId}`, icon: FaUser },
+    { sr: 6, title: "user-info", to: `/user-info/${userId}`, icon: FaUser },
   ];
 
   const isOpen = useChatStore((s) => s.isOpenGlobal);
@@ -72,12 +77,11 @@ const MainNav = ({ data }) => {
       console.log(error.message);
     }
   };
-
   //useEffect for notification
   useEffect(() => {
     const handleNotification = (notificationObject) => {
       if (notificationObject.author.includes(userId)) {
-        setNotificationUnseen(notificationUnseen + 1);
+        increaseUnseenNotification();
       }
     };
 
@@ -91,7 +95,7 @@ const MainNav = ({ data }) => {
   useEffect(() => {
     const handleMessage = ({ data, updatedCon }) => {
       if (data.receiver.id === userId) {
-        setMsgUnseen(msgUnseen + 1);
+        increaseUnseenMsg();
       }
     };
 
@@ -102,25 +106,29 @@ const MainNav = ({ data }) => {
     <nav
       className={`${
         isOpen ? "hidden md:block" : ""
-      } bg-gradient-to-r from-emerald-400 to-green-400
+      } bg-gradient-to-r from-white/20 to-gray-100/20 backdrop-blur-xs
        text-white px-1 md:px-6 py-4 shadow-lg sticky max-w-3xl mx-auto top-0 z-50`}
     >
-      <div className="max-w-3xl mx-auto flex justify-between items-center">
+      <div className="max-w-3xl mx-auto flex pr-3 justify-between items-center">
         <h1
-          className="md:text-2xl cursor-pointer font-bold "
+          className="md:text-2xl text-emerald-400 cursor-pointer font-bold "
           onClick={() => navigate("/")}
         >
           SocialBox
         </h1>
-        <div className="flex items-center w-[70%] justify-between gap-3">
+        <div className="flex items-center w-[70%] justify-between">
           {data.isLoggedIn ? (
             navItems.map((item) => (
               <Link
                 key={item.sr}
                 title={item.title}
                 to={item.to}
-                className="flex items-center gap-2 relative text-2xl px-1 py-1 md:px-3 md:py-1.5
-               bg-white text-indigo-600 rounded-full shadow hover:bg-indigo-100 transition"
+                className={`flex items-center relative text-xl p-2 md:p-3 
+                text-emerald-400 rounded-full shadow hover:bg-indigo-100/50 transition ${
+                  location.pathname.split("/")[1] === item.title
+                    ? "bg-gray-400/30"
+                    : ""
+                } `}
               >
                 {item.ping ? (
                   <div className="absolute -top-1 -right-1 text-xs h-4 w-4 rounded-full text-center text-white bg-red-500">

@@ -11,7 +11,7 @@ const deleteUsersConversation = require("../utilities/deleteAttachment");
 const getUsers = async (req, res, next) => {
   if (req.user.role) {
     const users = await people
-      .find({ name: { $ne: req.user.username } })
+      .find({ _id: { $ne: req.user.userId } })
       .sort({ active: -1, updatedAt: -1 });
     const user = await people.findById(req.user.userId);
     res.status(200).json({ user, users });

@@ -37,6 +37,9 @@ const SendMessage = ({ id }) => {
   };
 
   const handleSendMessage = async (id) => {
+    if (!inputMessage.text && !inputMessage.attachment) {
+      return;
+    }
     const data = new FormData();
     if (inputMessage.attachment) {
       inputMessage.attachment.forEach((file) => {

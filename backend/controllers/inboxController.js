@@ -134,6 +134,9 @@ const deleteConversation = async (req, res, next) => {
 };
 
 const sendMessage = async (req, res, next) => {
+  if (!req.body.text && !req.uploadedFiles) {
+    res.status(400).json({ message: "message cant be null" });
+  }
   try {
     const selectedConversation = await conversation.findByIdAndUpdate(
       req.body.conversation_id,
